@@ -7,6 +7,8 @@
  *   POST /cikar  → listeden çıkar {id}
  *   POST /duzelt → düzelt {id, alan, marka, urun, kategori?, dayanak, notu?}: eski kayıt "düzeltildi" olarak
  *                  geçmişe alınır, düzeltilmiş hali yeni kayıt olarak eklenir (onceki = eski kaydın id'si)
+ *   GET  /tepkiler → beğendi / beğenmedi / favori / bize dokundu kayıtları (yalnızca şifreyle: kişisel bilgi)
+ *   POST /tepki    → kendi tepkini kaydet ya da kaldır {anahtar, tepki, favori, dokundu, neden?, dokundu_notu?, alan, marka, urun}
  *
  * Kimin eklediğini ya da çıkardığını şifre belirler (KISILER: gizli değerin adı → görünen ad),
  * zamanı sunucunun saati belirler. Uygulamadan gelen bir ad ya da tarih hiç kullanılmaz.
@@ -16,8 +18,9 @@
 
 const ALANLAR = new Set(['gida', 'ilac', 'kozmetik', 'takviye']);
 const DAYANAKLAR = new Set(['paket', 'uretici', 'analiz', 'deneyim', 'diger']);
-const SINIR = { marka: 60, urun: 120, kategori: 60, notu: 280 };
-const ETIKET = { marka: 'Marka', urun: 'Ürün adı', kategori: 'Kategori', notu: 'Not' };
+const SINIR = { marka: 60, urun: 120, kategori: 60, notu: 280, tmarka: 80, turun: 300, neden: 140, dnotu: 200 };
+const ETIKET = { marka: 'Marka', urun: 'Ürün adı', kategori: 'Kategori', notu: 'Not', tmarka: 'Marka', turun: 'Ürün adı', neden: 'Neden', dnotu: 'Not' };
+const TSUTUN = 'anahtar, kisi, tepki, favori, dokundu, neden, dokundu_notu, dokundu_zaman, alan, marka, urun, zaman';
 const SUTUNLAR = 'id, alan, marka, urun, kategori, dayanak, notu, ekleyen, eklendi, cikaran, cikarildi, onceki';
 const enc = new TextEncoder();
 
@@ -221,6 +224,45 @@ async function cikar(req, env, ad) {
   return r;
 }
 
+// ---- tepkiler: kişisel tercih, değiştirilebilir; okunması da şifre ister
+async function tepkiler(env) {
+  const { results } = await env.DB.prepare(`SELECT ${TSUTUN} FROM tepkiler ORDER BY zaman DESC`).all();
+  return { tepkiler: results };
+}
+
+async function tepkiVer(req, env, ad) {
+  const g = await govde(req);
+  const anahtar = String(g.anahtar || '').normalize('NFC').trim();
+  if (!/^[lb]\|/.test(anahtar) || anahtar.length > 300) throw new Hata(400, 'Hangi ürüne tepki verildiği belirtilmemiş.');
+  const alan = String(g.alan || '');
+  if (!ALANLAR.has(alan)) throw new Hata(400, 'Ürünün listesi belirtilmemiş.');
+  let tepki = g.tepki == null || g.tepki === '' ? null : String(g.tepki);
+  if (tepki !== null && tepki !== 'begen' && tepki !== 'begenme') throw new Hata(400, 'Geçersiz tepki.');
+  const favori = g.favori ? 1 : 0;
+  if (favori) tepki = 'begen';  // favori, beğeni sayılır
+  const dokundu = g.dokundu ? 1 : 0;
+  const marka = temizle(g.marka, 'tmarka', true);
+  const urun = temizle(g.urun, 'turun', true);
+  const neden = tepki === 'begenme' ? temizle(g.neden, 'neden', false) : null;
+  const dnotu = dokundu ? temizle(g.dokundu_notu, 'dnotu', false) : null;
+  if (!tepki && !dokundu) {  // her şey kaldırıldı
+    await env.DB.prepare('DELETE FROM tepkiler WHERE anahtar = ? AND kisi = ?').bind(anahtar, ad).run();
+    return { anahtar, kisi: ad, tepki: null };
+  }
+  const zaman = new Date().toISOString();
+  const r = await env.DB.prepare(
+    `INSERT INTO tepkiler (anahtar, kisi, tepki, favori, dokundu, neden, dokundu_notu, dokundu_zaman, alan, marka, urun, zaman)
+     VALUES (?, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 1 THEN ? END, ?, ?, ?, ?)
+     ON CONFLICT (anahtar, kisi) DO UPDATE SET
+       tepki = excluded.tepki, favori = excluded.favori, dokundu = excluded.dokundu,
+       neden = excluded.neden, dokundu_notu = excluded.dokundu_notu,
+       dokundu_zaman = CASE WHEN excluded.dokundu = 1 THEN COALESCE(tepkiler.dokundu_zaman, excluded.dokundu_zaman) END,
+       alan = excluded.alan, marka = excluded.marka, urun = excluded.urun, zaman = excluded.zaman
+     RETURNING ${TSUTUN}`
+  ).bind(anahtar, ad, tepki, favori, dokundu, neden, dnotu, dokundu, zaman, alan, marka, urun, zaman).first();
+  return { anahtar, kisi: ad, tepki: r };
+}
+
 export default {
   async fetch(req, env) {
     const cors = corsBasliklari(req, env);
@@ -240,7 +282,7 @@ export default {
       if (req.method === 'GET' && yol === '/liste') return yanit(await liste(env), 200, cors);
       if (req.method === 'GET' && yol === '/') return yanit({ ad: 'Glutensiz Kontrol · Bizim listemiz', durum: 'çalışıyor' }, 200, cors);
       const islem = req.method + ' ' + yol;
-      if (!['GET /ben', 'POST /ekle', 'POST /cikar', 'POST /duzelt'].includes(islem)) throw new Hata(404, 'Böyle bir adres yok.');
+      if (!['GET /ben', 'POST /ekle', 'POST /cikar', 'POST /duzelt', 'GET /tepkiler', 'POST /tepki'].includes(islem)) throw new Hata(404, 'Böyle bir adres yok.');
       const ad = await kim(req, env);
       if (!ad) {
         await bekle(700); // tahmin denemelerini yavaşlat
@@ -249,6 +291,8 @@ export default {
       if (islem === 'GET /ben') return yanit({ ad }, 200, cors);
       if (islem === 'POST /ekle') return yanit({ urun: await ekle(req, env, ad) }, 201, cors);
       if (islem === 'POST /duzelt') return yanit(await duzelt(req, env, ad), 200, cors);
+      if (islem === 'GET /tepkiler') return yanit(await tepkiler(env), 200, cors);
+      if (islem === 'POST /tepki') return yanit(await tepkiVer(req, env, ad), 200, cors);
       return yanit({ urun: await cikar(req, env, ad) }, 200, cors);
     } catch (e) {
       if (e instanceof Hata) return yanit({ hata: e.message, ...(e.ek || {}) }, e.durum, cors);
