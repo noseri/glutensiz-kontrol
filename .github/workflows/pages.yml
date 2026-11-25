@@ -4,8 +4,7 @@ on:
   push:
     branches: [main]
     paths: ['site/**']
-  workflow_dispatch:
-  workflow_call:
+  workflow_dispatch:     # haftalık kontrol değişiklik kaydedince bunu başlatır
 
 permissions:
   contents: read

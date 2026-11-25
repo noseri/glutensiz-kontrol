@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   issues: write
+  actions: write     # yayın iş akışını başlatmak için
 
 concurrency:
   group: liste-kontrolu
@@ -17,8 +18,6 @@ jobs:
   kontrol:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    outputs:
-      deploy: ${{ steps.apply.outputs.deploy }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +43,12 @@ jobs:
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: bash scripts/apply.sh
 
+      - name: Sayfayı yeniden yayınla
+        if: steps.apply.outputs.deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
+
       - name: Çalışma dosyalarını sakla (hata ayıklama için)
         if: always()
         uses: actions/upload-artifact@v4
@@ -51,12 +56,3 @@ jobs:
           name: kontrol-${{ github.run_number }}
           path: out/
           retention-days: 14
-
-  yayinla:
-    needs: kontrol
-    if: needs.kontrol.outputs.deploy == 'true'
-    uses: ./.github/workflows/pages.yml
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
