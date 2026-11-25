@@ -198,6 +198,8 @@ details.fold[open] summary::after{content:"–"}
 .lnk:hover{color:var(--ink)}
 .lnk.us{color:var(--us);text-decoration:none;font-size:14px}
 .cf{display:inline-flex;align-items:center;gap:12px;font-weight:700;color:var(--ink)}
+.us-a{display:inline-flex;gap:18px}
+.tag-d{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--usbg);color:var(--us);font-size:11.5px;font-weight:700;vertical-align:1px}
 .cf .lnk.yes{color:var(--no)}
 .addb{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-top:1px solid var(--line);background:none;padding:13px 16px;font-weight:800;font-size:15px;color:var(--us);cursor:pointer;min-height:48px;text-align:center}
 .addb svg{width:18px;height:18px;flex:none}
@@ -435,8 +437,14 @@ function setUs(j, kaynak){
   const ok = x => x && typeof x === 'object' && x.id != null && x.marka && x.urun && x.ekleyen && x.eklendi;
   US = {urunler: j.urunler.filter(ok), cikarilanlar: (Array.isArray(j.cikarilanlar) ? j.cikarilanlar : []).filter(ok), zaman: j.zaman || null, kaynak, hata: false};
   US.urunler.forEach(it => { it.nn = norm([it.marka, it.urun, it.kategori || ''].join(' ')); it.kn = norm(it.kategori || ''); });
+  // düzeltme zinciri: her kayıt, düzelttiği eski kayda "onceki" ile bağlı
+  US.byId = {}; US.next = {};
+  US.urunler.concat(US.cikarilanlar).forEach(x => { US.byId[x.id] = x; if (x.onceki != null) US.next[x.onceki] = x; });
   return true;
 }
+function usRoot(r){ const by = US.byId || {}; let x = r, n = 0; while (x.onceki != null && by[x.onceki] && n++ < 50) x = by[x.onceki]; return x; }
+const usNext = r => (US.next || {})[r.id] || null;
+function usApply(urunler, cikarilanlar){ setUs({urunler, cikarilanlar, zaman: US.zaman}, US.kaynak || 'canli'); saveUs(); }
 function saveUs(){
   const strip = x => { const o = Object.assign({}, x); delete o.nn; delete o.kn; return o; };
   lsSet('gk-bizim', JSON.stringify({zaman: US.zaman, urunler: US.urunler.map(strip), cikarilanlar: US.cikarilanlar.map(strip)}));
@@ -485,14 +493,23 @@ function usRow(it, gone){
   const dn = (DOMAINS.find(d => d[0] === it.alan) || ['', ''])[1];
   const meta = [it.kategori || '', it.alan !== st.dom ? dn : ''].filter(Boolean).map(esc).join(' · ');
   const id = +it.id;
+  let stamp;
+  if (gone){
+    const sonraki = usNext(it);
+    stamp = '<b>' + esc(it.ekleyen) + '</b> ' + (it.onceki != null ? 'düzeltti' : 'ekledi') + ' · ' + fmtWhen(it.eklendi) +
+      (it.cikarildi ? '<br><b>' + esc(it.cikaran) + '</b> ' + (sonraki ? (it.onceki != null ? 'yeniden düzeltti' : 'düzeltti') : 'listeden çıkardı') + ' · ' + fmtWhen(it.cikarildi) : '');
+  } else {
+    const kok = usRoot(it);  // ilk eklenen hali
+    stamp = '<b>' + esc(kok.ekleyen) + '</b> ekledi · ' + fmtWhen(kok.eklendi) +
+      (kok !== it ? '<br><b>' + esc(it.ekleyen) + '</b> düzeltti · ' + fmtWhen(it.eklendi) : '');
+  }
   return '<div class="us-it' + (gone ? ' gone' : '') + '" id="us-' + (gone ? 'g' : '') + id + '"><span class="mk m-us" aria-hidden="true">' + ICON.us + '</span><div>' +
-    '<div class="us-t"><b>' + esc(it.marka) + '</b> ' + esc(it.urun) + '</div>' +
+    '<div class="us-t"><b>' + esc(it.marka) + '</b> ' + esc(it.urun) + (gone && usNext(it) ? '<span class="tag-d">düzeltildi</span>' : '') + '</div>' +
     (meta ? '<div class="us-m">' + meta + '</div>' : '') +
     '<div class="us-d"><span>Dayanak:</span> ' + esc(DAY[it.dayanak] || it.dayanak) + '</div>' +
     (it.notu ? '<div class="us-n">' + esc(it.notu) + '</div>' : '') +
-    '<div class="us-s"><span><b>' + esc(it.ekleyen) + '</b> ekledi · ' + fmtWhen(it.eklendi) +
-      (gone && it.cikarildi ? '<br><b>' + esc(it.cikaran) + '</b> listeden çıkardı · ' + fmtWhen(it.cikarildi) : '') + '</span>' +
-      (!gone && USKEY ? '<button class="lnk" data-cikar="' + id + '">Listeden çıkar</button>' : '') + '</div></div></div>';
+    '<div class="us-s"><span>' + stamp + '</span>' +
+      (!gone && USKEY ? '<span class="us-a"><button class="lnk" data-duzelt="' + id + '">Düzelt</button><button class="lnk" data-cikar="' + id + '">Listeden çıkar</button></span>' : '') + '</div></div></div>';
 }
 function addBtn(q, label){
   return '<button class="addb" data-ekle="' + esc(q || '') + '">' + ICON.plus + '<span>' + esc(label || 'Listemize ürün ekle') + '</span></button>';
@@ -504,7 +521,9 @@ function usCard(items){
 function usHistory(dom){
   const g = US.cikarilanlar.filter(it => it.alan === dom);
   if (!g.length) return '';
-  return '<details class="ush"><summary>Geçmiş: ' + g.length + ' ürün listeden çıkarıldı</summary>' + g.slice(0, 50).map(it => usRow(it, true)).join('') + '</details>';
+  const d = g.filter(it => usNext(it)).length, c = g.length - d;
+  const ozet = [d ? d + ' düzeltme' : '', c ? c + ' çıkarma' : ''].filter(Boolean).join(', ');
+  return '<details class="ush"><summary>Geçmiş: ' + ozet + '</summary>' + g.slice(0, 50).map(it => usRow(it, true)).join('') + '</details>';
 }
 function usHome(){
   if (!API) return '';
@@ -662,11 +681,17 @@ function katWire(d){
   v.addEventListener('click', () => { if (list.hidden){ inp.focus(); katOpen(); } else { katClose(); inp.blur(); } });
   box.querySelector('.cb-x').addEventListener('click', () => { inp.value = ''; katPicked = ''; katSync(); inp.focus(); });
 }
-function openAdd(q){
+const LEAD_EKLE = 'Dernek onayı yerine geçmez. Ürün mavi “Bizim listemiz” etiketiyle, kimin ve ne zaman eklediği yazılı olarak görünür.';
+const LEAD_DUZ = 'Eski kayıt silinmez: geçmişte “düzeltildi” olarak, kimin ne zaman düzelttiğiyle birlikte kalır.';
+function openAdd(q, noFocus){
   if (!API || !D) return;
   dlg = dlg || buildDlg();
   const f = dlg.querySelector('form'), el = n => f.elements.namedItem(n);
   f.reset();
+  delete dlg.dataset.duzelt;
+  dlg.querySelector('#addH').textContent = 'Listemize ekle';
+  dlg.querySelector('.lead').textContent = LEAD_EKLE;
+  dlg.querySelector('.rad legend').textContent = 'Neye dayanarak ekliyorsunuz?';
   const p = prefill(q);
   el('marka').value = p.marka; el('urun').value = p.urun;
   f.querySelectorAll('input[name=alan]').forEach(r => { r.checked = r.value === st.dom; });
@@ -678,7 +703,24 @@ function openAdd(q){
   const b = f.querySelector('.btn'); b.disabled = false; b.textContent = 'Listemize ekle';
   document.documentElement.classList.add('modal');
   if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
-  if (!p.marka) el('marka').focus();
+  if (!p.marka && !noFocus) el('marka').focus();
+}
+// düzelt: aynı form, kaydın bilgileriyle dolu
+function openEdit(id){
+  const it = US.urunler.find(x => +x.id === id); if (!it) return;
+  openAdd('', true);
+  const f = dlg.querySelector('form'), el = n => f.elements.namedItem(n);
+  dlg.dataset.duzelt = String(it.id);
+  dlg.querySelector('#addH').textContent = 'Düzelt';
+  dlg.querySelector('.lead').textContent = LEAD_DUZ;
+  dlg.querySelector('.rad legend').textContent = 'Neye dayanarak?';
+  f.querySelectorAll('input[name=alan]').forEach(r => { r.checked = r.value === it.alan; });
+  fillLists(it.alan);
+  el('marka').value = it.marka; el('urun').value = it.urun;
+  el('kategori').value = it.kategori || ''; katPicked = it.kategori || ''; katSync();
+  f.querySelectorAll('input[name=dayanak]').forEach(r => { r.checked = r.value === it.dayanak; });
+  el('notu').value = it.notu || '';
+  f.querySelector('.btn').textContent = 'Düzeltmeyi kaydet';
 }
 async function whoAmI(){
   if (!USKEY) return;
@@ -696,21 +738,32 @@ async function submitAdd(){
   const pick = n => { const c = f.querySelector('input[name=' + n + ']:checked'); return c ? c.value : ''; };
   const v = {alan: pick('alan'), marka: el('marka').value.trim(), urun: el('urun').value.trim(), kategori: el('kategori').value.trim(), dayanak: pick('dayanak'), notu: el('notu').value.trim()};
   const key = USKEY || el('sifre').value.normalize('NFC').trim();
+  const duzId = dlg.dataset.duzelt ? +dlg.dataset.duzelt : 0;
+  const btnText = duzId ? 'Düzeltmeyi kaydet' : 'Listemize ekle';
   err.textContent = '';
   if (!v.marka || !v.urun){ err.textContent = 'Marka ve ürün adını yazın.'; (v.marka ? el('urun') : el('marka')).focus(); return; }
   if (!v.dayanak){ err.textContent = 'Neye dayanarak eklediğinizi seçin.'; return; }
   if (v.dayanak === 'diger' && !v.notu){ err.textContent = '“Diğer” seçtiyseniz nedenini not alanına yazın.'; el('notu').focus(); return; }
   if (key.length < 8){ err.textContent = 'Ekleme şifrenizi yazın (en az 8 karakter).'; el('sifre').focus(); return; }
-  btn.disabled = true; btn.textContent = 'Ekleniyor…';
+  btn.disabled = true; btn.textContent = duzId ? 'Kaydediliyor…' : 'Ekleniyor…';
   try {
-    const r = await fetch(API + '/ekle', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(key)), body: JSON.stringify(v)});
+    const r = await fetch(API + (duzId ? '/duzelt' : '/ekle'), {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(key)), body: JSON.stringify(duzId ? Object.assign({id: duzId}, v) : v)});
     let j = {}; try { j = await r.json(); } catch (x) {}
     if (r.status !== 401 && r.status < 500 && !USKEY){ USKEY = key; lsSet('gk-sifre', key); }  // sunucu şifreyi tanıdı
-    if (r.status === 201 && j.urun){
+    if (duzId && r.status === 200 && j.yeni && j.eski){
+      USNAME = j.yeni.ekleyen; lsSet('gk-ad', USNAME);
+      usApply([j.yeni].concat(US.urunler.filter(x => +x.id !== duzId && +x.id !== +j.yeni.id)), [j.eski].concat(US.cikarilanlar.filter(x => +x.id !== duzId)));
+      dlg.close();
+      if (j.yeni.alan !== st.dom && !st.q){ st.pick = st.dom = j.yeni.alan; lsSet('gk-dom', st.pick); drawTabs(); }
+      rerender();
+      const row = document.getElementById('us-' + (+j.yeni.id));
+      if (row){ row.classList.add('new'); row.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }
+      toast('Düzeltildi · ' + j.yeni.ekleyen + ' · ' + fmtWhen(j.yeni.eklendi));
+      return;
+    }
+    if (!duzId && r.status === 201 && j.urun){
       USNAME = j.urun.ekleyen; lsSet('gk-ad', USNAME);
-      US.urunler = [j.urun].concat(US.urunler.filter(x => +x.id !== +j.urun.id));
-      setUs({urunler: US.urunler, cikarilanlar: US.cikarilanlar, zaman: US.zaman}, US.kaynak || 'canli');
-      saveUs();
+      usApply([j.urun].concat(US.urunler.filter(x => +x.id !== +j.urun.id)), US.cikarilanlar);
       dlg.close();
       if (j.urun.alan !== st.dom && !st.q){ st.pick = st.dom = j.urun.alan; lsSet('gk-dom', st.pick); drawTabs(); }
       rerender();
@@ -724,17 +777,20 @@ async function submitAdd(){
       err.textContent = 'Şifre tanınmadı. Yeniden yazıp deneyin.';
       el('sifre').value = ''; el('sifre').focus();
     } else if (r.status === 409 && j.urun){
-      err.textContent = 'Bu ürün zaten listede: ' + j.urun.ekleyen + ' ekledi · ' + fmtWhen(j.urun.eklendi) + '.';
+      err.textContent = (duzId ? 'Bu adla başka bir ürün zaten listede: ' : 'Bu ürün zaten listede: ') + j.urun.ekleyen + ' ekledi · ' + fmtWhen(j.urun.eklendi) + '.';
       if (!USNAME) whoAmI();
       loadUs(true);
+    } else if (duzId && r.status === 404){
+      err.textContent = j.hata || 'Bu ürün listede değil; az önce çıkarılmış ya da düzeltilmiş olabilir.';
+      loadUs(true);
     } else {
-      err.textContent = j.hata || ('Eklenemedi (hata ' + r.status + '). Biraz sonra yeniden deneyin.');
+      err.textContent = j.hata || ((duzId ? 'Düzeltilemedi' : 'Eklenemedi') + ' (hata ' + r.status + '). Biraz sonra yeniden deneyin.');
       if (!USNAME && USKEY) whoAmI();
     }
   } catch (e) {
     err.textContent = netErr(e);
   }
-  btn.disabled = false; btn.textContent = 'Listemize ekle';
+  btn.disabled = false; btn.textContent = btnText;
 }
 async function removeUs(id, t){
   if (!USKEY) return rerender();
@@ -743,7 +799,7 @@ async function removeUs(id, t){
     const r = await fetch(API + '/cikar', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(USKEY)), body: JSON.stringify({id})});
     let j = {}; try { j = await r.json(); } catch (x) {}
     if (r.ok && j.urun){
-      US.urunler = US.urunler.filter(x => +x.id !== id); US.cikarilanlar.unshift(j.urun); saveUs();
+      usApply(US.urunler.filter(x => +x.id !== id), [j.urun].concat(US.cikarilanlar.filter(x => +x.id !== id)));
       rerender(); toast('Listeden çıkarıldı · ' + j.urun.cikaran + ' · ' + fmtWhen(j.urun.cikarildi));
       return;
     }
@@ -755,8 +811,9 @@ async function removeUs(id, t){
 function usClick(t){
   const ds = t.dataset;
   if ('ekle' in ds){ openAdd(ds.ekle); return true; }
+  if (ds.duzelt){ openEdit(+ds.duzelt); return true; }
   if (ds.cikar){
-    t.outerHTML = '<span class="cf">Listeden çıkarılsın mı? <button class="lnk yes" data-cikarevet="' + (+ds.cikar) + '">Evet, çıkar</button><button class="lnk" data-cikarhayir="1">Vazgeç</button></span>';
+    (t.closest('.us-a') || t).outerHTML = '<span class="cf">Listeden çıkarılsın mı? <button class="lnk yes" data-cikarevet="' + (+ds.cikar) + '">Evet, çıkar</button><button class="lnk" data-cikarhayir="1">Vazgeç</button></span>';
     return true;
   }
   if (ds.cikarevet){ removeUs(+ds.cikarevet, t); return true; }
