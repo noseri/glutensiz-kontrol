@@ -52,7 +52,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
-          BIZIM_API: ''   # Bizim listemiz sunucusunun adresi (yayından sonra yazılır)
+          BIZIM_API: https://glutensiz-liste.noserinin-hesab.workers.dev   # Bizim listemiz sunucusu (haftalık yedek için)
         run: bash scripts/apply.sh
 
       - name: Bildirim testi

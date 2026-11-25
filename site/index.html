@@ -364,7 +364,7 @@ const STANDALONE = (typeof matchMedia === 'function' && matchMedia('(display-mod
 
 // ---- bizim listemiz: kendi eklediğimiz ürünler (Cloudflare Worker + D1, bkz. worker/)
 // Kimin eklediğini telefondaki ekleme şifresi, ne zaman eklendiğini sunucunun saati belirler.
-const API_URL = '';  // yayından sonra sunucu adresi buraya yazılır; boşken bu bölüm hiç görünmez
+const API_URL = 'https://glutensiz-liste.noserinin-hesab.workers.dev';  // boş bırakılırsa bu bölüm hiç görünmez
 const API = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('api')) || API_URL;
 const DAY = {paket:'Paketinde glutensiz ibaresi var', uretici:'Üretici yazılı teyit verdi', analiz:'Analiz raporu var', deneyim:'Kendimiz kullandık, sorun olmadı', diger:'Diğer'};
 const DAYS = ['paket', 'uretici', 'analiz', 'deneyim', 'diger'];
