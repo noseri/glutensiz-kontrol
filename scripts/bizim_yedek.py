@@ -11,7 +11,7 @@ import json
 import sys
 import urllib.request
 
-ALANLAR = ['id', 'alan', 'marka', 'urun', 'kategori', 'dayanak', 'notu', 'ekleyen', 'eklendi', 'cikaran', 'cikarildi']
+ALANLAR = ['id', 'alan', 'marka', 'urun', 'kategori', 'dayanak', 'notu', 'ekleyen', 'eklendi', 'cikaran', 'cikarildi', 'onceki']
 
 
 def temiz(satirlar):

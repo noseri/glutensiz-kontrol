@@ -1,6 +1,8 @@
 -- Bizim listemiz: kendi eklediğimiz ürünler (Cloudflare D1 / SQLite).
 -- Kayıtlar silinmez. "Listeden çıkar" yalnızca cikaran ve cikarildi alanlarını doldurur;
 -- kimin, ne zaman eklediği sonradan değiştirilemez.
+-- "Düzelt": eski kayıt çıkarılmış gibi kapanır, düzeltilmiş hali yeni kayıt olur (onceki = eski kaydın id'si).
+-- Yeni kurulum için bu dosya yeterli; var olan veritabanı için migrations/ altındaki dosyalar sırayla uygulanır.
 
 CREATE TABLE IF NOT EXISTS urunler (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,7 +16,8 @@ CREATE TABLE IF NOT EXISTS urunler (
   eklendi   TEXT NOT NULL,
   cikaran   TEXT,
   cikarildi TEXT,
-  esas      TEXT NOT NULL
+  esas      TEXT NOT NULL,
+  onceki    INTEGER REFERENCES urunler(id)
 );
 
 -- Aynı ürün listede iki kez durmasın (çıkarılanlar hariç).
@@ -22,7 +25,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS urunler_esas_aktif ON urunler (esas) WHERE cik
 
 -- Eklenme kaydı değişmez.
 CREATE TRIGGER IF NOT EXISTS urunler_ekleme_degismez
-BEFORE UPDATE OF alan, marka, urun, kategori, dayanak, notu, ekleyen, eklendi, esas ON urunler
+BEFORE UPDATE OF alan, marka, urun, kategori, dayanak, notu, ekleyen, eklendi, esas, onceki ON urunler
 BEGIN
   SELECT RAISE(ABORT, 'Eklenme kaydı değiştirilemez.');
 END;

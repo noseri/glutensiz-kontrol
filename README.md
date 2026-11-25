@@ -19,6 +19,7 @@ Derneklerde olmayan ama güvendiğiniz ürünleri uygulamadan ekleyebilirsiniz. 
 
 - **Kim:** her kişinin kendi ekleme şifresi vardır. Hangi adın yazılacağını şifre belirler; uygulamadan ad gönderilmez.
 - **Ne zaman:** tarih ve saat sunucunun saatidir.
+- **Düzeltme:** “Düzelt” ile yazım hatası ya da eksik bilgi tek adımda düzeltilir. Eski kayıt geçmişte “düzeltildi” olarak kalır; listede ilk ekleyen ve düzelten ayrı ayrı yazar.
 - **Değiştirilemez kayıt:** satırlar silinmez. “Listeden çıkar” ürünü listeden kaldırır ama kaydı “Geçmiş” bölümünde, kimin ne zaman çıkardığıyla birlikte saklar. Veritabanındaki tetikleyiciler eklenme ve çıkarma kaydının sonradan düzenlenmesini engeller (`worker/schema.sql`).
 - **Nerede:** Cloudflare Workers + D1 (ücretsiz katman), kodu `worker/`. Liste herkese açık olarak okunabilir; ekleme ve çıkarma şifre ister. Haftalık kontrol listenin bir yedeğini `site/bizim.json` olarak depoya da yazar.
 
