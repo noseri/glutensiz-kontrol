@@ -1,10 +1,12 @@
-/* Glutensiz Kontrol — çevrimdışı çalışma
- * Sayfa, liste, analiz raporu listesi ve “Bizim listemiz” haftalık yedeği (index.html, data.json, reports.json, bizim.json):
- * önce ağ; ağ yoksa ya da 4 sn'de yanıt gelmezse telefondaki son kopya.
- * “Bizim listemiz” sunucusu başka adreste olduğu için service worker ona karışmaz; uygulama kendi kopyasını saklar.
+/* Glutensiz Kontrol — hızlı açılış ve çevrimdışı çalışma
+ * Sayfa (index.html): önce ağ; 1,5 sn'de yanıt gelmezse telefondaki kopya. Yeni sürüm arka planda yine alınır.
+ * Listeler (data.json, reports.json, bizim.json): telefondaki kopya hemen verilir, yenisi arka planda alınır.
+ *   data.json değiştiyse sayfaya "veri-yenilendi" iletisi gider ve liste kendiliğinden yenilenir.
+ *   Arka plandaki istek başarısız olursa "ag-yok", başarılı olursa "ag-var" iletisi gider (çevrimdışı göstergesi).
  * Yazı tipleri ve simgeler: önce önbellek.
+ * “Bizim listemiz” sunucusu başka adreste olduğu için service worker ona karışmaz; uygulama kendi kopyasını saklar.
  */
-const CACHE = 'gk-v3';
+const CACHE = 'gk-v4';
 const SHELL = [
   './index.html',
   './data.json',
@@ -16,10 +18,11 @@ const SHELL = [
   './icons/icon-192.png',
   './icons/apple-touch-icon.png'
 ];
-const NET_TIMEOUT = 4000;
+const PAGE_TIMEOUT = 1500;
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // tarayıcının kendi önbelleğini atla: kurulumda dosyaların en yenisi alınsın
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, {cache: 'reload'})))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -35,29 +38,35 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  const fresh = req.mode === 'navigate' || /\/(index\.html|data\.json|reports\.json|bizim\.json)?$/.test(url.pathname);
-  e.respondWith(fresh ? networkFirst(e, req, url) : cacheFirst(req));
+  if (req.mode === 'navigate' || /\/(index\.html)?$/.test(url.pathname)) {
+    e.respondWith(page(e, req));
+    return;
+  }
+  const m = url.pathname.match(/\/(data|reports|bizim)\.json$/);
+  if (m) {
+    e.respondWith(list(e, url, './' + m[1] + '.json'));
+    return;
+  }
+  e.respondWith(cacheFirst(req));
 });
 
-function cacheKey(req, url) {
-  if (req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('/index.html')) return './index.html';
-  if (url.pathname.endsWith('/data.json')) return './data.json';
-  if (url.pathname.endsWith('/bizim.json')) return './bizim.json';
-  return url.pathname.endsWith('/reports.json') ? './reports.json' : req;
+async function tell(msg) {
+  const cs = await self.clients.matchAll({type: 'window'});
+  cs.forEach(c => c.postMessage(msg));
 }
 
-async function networkFirst(e, req, url) {
+const imza = r => (r && (r.headers.get('etag') || r.headers.get('last-modified') || r.headers.get('content-length'))) || '';
+
+// sayfa: önce ağ, kısa bekleme; gecikirse telefondaki kopya
+async function page(e, req) {
   const cache = await caches.open(CACHE);
-  const key = cacheKey(req, url);
-  const net = (req.mode === 'navigate' ? fetch(req) : fetch(url.href, {cache: 'no-cache'}))
-    .then(res => {
-      if (res.ok) cache.put(key, res.clone());
-      return res;
-    });
-  // ağ geç kalırsa önbellekten yanıt ver, ama indirme bitince kopyayı yine güncelle
+  const net = fetch(req).then(res => {
+    if (res.ok && !res.redirected) cache.put('./index.html', res.clone());
+    return res;
+  });
   e.waitUntil(net.catch(() => {}));
   let timer;
-  const timeout = new Promise(resolve => { timer = setTimeout(() => resolve(null), NET_TIMEOUT); });
+  const timeout = new Promise(resolve => { timer = setTimeout(() => resolve(null), PAGE_TIMEOUT); });
   let res = null;
   try {
     res = await Promise.race([net, timeout]);
@@ -66,15 +75,26 @@ async function networkFirst(e, req, url) {
   }
   clearTimeout(timer);
   if (res && res.ok) return res;
-  const hit = await cache.match(key, {ignoreSearch: true});
-  if (hit) return markOffline(hit);
-  return res || net;  // önbellekte yoksa ağın yanıtını bekle
+  const hit = await cache.match('./index.html');
+  return hit || res || net;
 }
 
-async function markOffline(res) {
-  const headers = new Headers(res.headers);
-  headers.set('x-gk-offline', '1');
-  return new Response(await res.blob(), {status: res.status, statusText: res.statusText, headers});
+// listeler: telefondaki kopya hemen, yenisi arka planda
+async function list(e, url, key) {
+  const cache = await caches.open(CACHE);
+  const hit = await cache.match(key);
+  if (hit && url.searchParams.has('onbellek')) return hit;  // sayfa az önce yenilenen kopyayı istiyor
+  const net = fetch(url.origin + url.pathname, {cache: 'no-cache'}).then(async res => {
+    if (res.ok) {
+      const degisti = !!hit && imza(hit) !== imza(res);
+      await cache.put(key, res.clone());
+      if (key === './data.json') await tell({type: degisti ? 'veri-yenilendi' : 'ag-var'});
+    }
+    return res;
+  });
+  if (!hit) return net;  // ilk açılış: telefonda kopya yok, ağı bekle
+  e.waitUntil(net.catch(() => (key === './data.json' ? tell({type: 'ag-yok'}) : null)));
+  return hit;
 }
 
 async function cacheFirst(req) {

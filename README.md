@@ -39,7 +39,7 @@ Görünen adlar `worker/wrangler.toml` içindeki `KISILER` satırındadır.
 - **iPhone:** Safari’de açın → Paylaş → *Ana Ekrana Ekle*
 - **Android:** Chrome’da açın → menü → *Ana ekrana ekle* / *Uygulamayı yükle*
 
-Bir kez açıldıktan sonra liste telefona kaydedilir. İnternet yoksa son kaydedilen liste gösterilir ve başlıkta “çevrimdışı” yazar.
+Bir kez açıldıktan sonra liste telefona kaydedilir ve sonraki açılışlarda beklemeden telefondan gelir; internet varsa yenisi arka planda alınır, değiştiyse sayfa kendiliğinden yenilenir. İnternet yoksa başlıkta “çevrimdışı” yazar. Arama kutusu boşken son aramalar tek dokunuşla tekrarlanabilir.
 
 ## Güncelleme
 

@@ -46,7 +46,8 @@ header.top{padding:22px 0 6px}
 .brandline{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 h1{font-size:clamp(26px,5.4vw,34px);line-height:1.05;letter-spacing:-.02em;margin:0;font-weight:800;text-wrap:balance}
 .sub{color:var(--mut);font-size:14px;margin:6px 0 0}
-.upd{font-size:13px;color:var(--mut);white-space:nowrap}.upd.off{color:var(--one);font-weight:600}
+.upd{font-size:13px;color:var(--mut);white-space:nowrap;min-height:1.5em}.upd.off{color:var(--one);font-weight:600}
+@media(max-width:560px){.upd{flex-basis:100%}}  /* tarih satırının yeri baştan ayrılır: liste gelince sayfa kaymaz */
 .bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 10px;border-bottom:1px solid transparent}
 .bar.stuck{border-bottom-color:var(--line)}
 .search{position:relative}
@@ -59,9 +60,10 @@ body.searching .sub{display:none}body.searching header.top{padding-bottom:0}
 #q:focus-visible{box-shadow:0 0 0 3px light-dark(#12141722,#eef0f233)}
 #clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:none;border-radius:12px;display:none;cursor:pointer;color:var(--mut)}
 #clear.on{display:grid;place-items:center}
-.tabs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tabs{display:flex;gap:6px;margin-top:5px;padding:5px 0 4px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:600;cursor:pointer;color:var(--mut)}
+.tab{flex:none;position:relative;height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;font-weight:600;cursor:pointer;color:var(--mut)}
+.tab::after{content:'';position:absolute;inset:-5px -3px -4px}  /* dokunma alanı ~48 px */
 .tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 main{padding:8px 0 60px}
 .sec{margin:22px 0 10px;font-size:13px;font-weight:700;color:var(--mut);display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -120,6 +122,26 @@ ul.ls{list-style:none;margin:0;padding:0}
 .brow .lft{min-width:0;flex:1}
 .bdet{padding:2px 16px 12px;border-top:1px dashed var(--line)}
 .legend{display:grid;gap:8px;margin:14px 0 4px}
+/* renk anahtarı: küçük etiketler, açıklaması dokununca */
+details.key{margin:14px 0 2px}
+details.key summary{list-style:none;cursor:pointer}
+details.key summary::-webkit-details-marker{display:none}
+.kg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(min-width:640px){.kg{grid-template-columns:repeat(4,1fr)}}
+.kc{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 10px 6px 6px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:13px;font-weight:700;line-height:1.2}
+.kc .dot{width:30px;height:30px;border-radius:9px}.kc .dot svg{width:17px;height:17px}
+.kq{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--mut)}
+.kq svg{width:15px;height:15px;transition:transform .15s}details.key[open] .kq svg{transform:rotate(180deg)}
+details.key .legend{margin:8px 0 0}
+/* son aramalar */
+.recent{display:flex;align-items:center;gap:6px;margin:9px 0 0;padding:5px 0;overflow-x:auto;scrollbar-width:none}
+.recent::-webkit-scrollbar{display:none}
+.recent > *{flex:none}
+.recent .rl{font-size:12.5px;font-weight:700;color:var(--mut);margin-right:2px}
+.recent .sg{position:relative;height:34px;padding:0 12px;font-size:13.5px;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent .sg::after{content:'';position:absolute;inset:-5px -3px}
+.recent .lnk{margin-left:4px}
+.card > .addb:first-child{border-top:0}
 .lg{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 .lg .dot{width:34px;height:34px;border-radius:10px}
 .lg b{display:block;font-size:15px}
@@ -148,7 +170,7 @@ details.fold[open] summary::after{content:"–"}
 .chg{font-size:14px}
 .wk{padding:14px 16px}.wk-h{margin:0 0 6px;font-size:14.5px}.wk .chg{margin:0;padding-left:0;list-style:none}.wk .chg li{margin:5px 0;line-height:1.45}.wk .cn{color:var(--mut);font-size:12.5px}.wk .more{margin:8px 0 0;font-size:12.5px;color:var(--mut)}
 .chg li{margin:3px 0}
-.loading{padding:40px 0;color:var(--mut);text-align:center}
+.loading{padding:40px 0;color:var(--mut);text-align:center;min-height:100vh}
 .moved{margin:2px 0 12px}
 .sig{margin:8px 0 calc(28px + env(safe-area-inset-bottom));text-align:center;font-size:13px;color:var(--mut);letter-spacing:.01em}
 .rep{display:flex;align-items:center;gap:10px;margin:0 16px 14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;color:var(--ink);font-size:13.5px;line-height:1.4;text-decoration:none}
@@ -171,7 +193,8 @@ details.fold[open] summary::after{content:"–"}
 .us-it.gone .mk{opacity:.5}
 .us-it.new{animation:usnew 1.6s ease-out}
 @keyframes usnew{from{background:var(--usbg)}to{background:transparent}}
-.lnk{border:0;background:none;padding:4px 0;min-height:32px;font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.lnk{position:relative;border:0;background:none;padding:4px 0;min-height:32px;font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.lnk::after{content:'';position:absolute;inset:-6px -6px}  /* dokunma alanı 44 px */
 .lnk:hover{color:var(--ink)}
 .lnk.us{color:var(--us);text-decoration:none;font-size:14px}
 .cf{display:inline-flex;align-items:center;gap:12px;font-weight:700;color:var(--ink)}
@@ -204,6 +227,7 @@ dialog.sheet::backdrop{background:rgba(12,14,16,.45)}
 .cb input{padding-right:84px}
 .cb-v,.cb-x{position:absolute;top:24px;transform:translateY(-50%);width:38px;height:38px;border:0;background:none;color:var(--mut);display:grid;place-items:center;cursor:pointer;border-radius:10px;padding:0}
 .cb-v{right:4px}.cb-x{right:42px}
+.cb-v::after,.cb-x::after{content:'';position:absolute;inset:-3px 0}
 .cb-v svg,.cb-x svg{width:18px;height:18px}
 .cb-v svg{transition:transform .15s}.cb[data-open] .cb-v svg{transform:rotate(180deg)}
 .cb-x[hidden],.cb-list[hidden]{display:none}
@@ -218,6 +242,7 @@ fieldset.seg,fieldset.rad{border:0;margin:0;padding:0;min-width:0}
 fieldset.seg legend,fieldset.rad legend{padding:0;margin-bottom:6px;font-size:13px;font-weight:700;color:var(--mut)}
 .seg .opts{display:flex;gap:6px;flex-wrap:wrap}
 .seg label{position:relative}
+.seg label::after{content:'';position:absolute;inset:-4px -3px}
 .seg input{position:absolute;opacity:0;width:1px;height:1px}
 .seg span{display:inline-flex;align-items:center;height:36px;padding:0 11px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--mut);cursor:pointer}
 .seg input:checked+span{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -244,22 +269,23 @@ html.modal{overflow:hidden}
   <header class="top">
     <div class="brandline">
       <h1>Glutensiz Kontrol</h1>
-      <span class="upd" id="upd"></span>
+      <span class="upd" id="upd">&nbsp;</span>
     </div>
     <p class="sub">İstanbul ve Ankara çölyak derneklerinin onay listeleri, tek aramada.</p>
   </header>
 </div>
-<div class="bar" id="bar">
+<div class="bar" id="bar" role="region" aria-label="Arama ve liste seçimi">
   <div class="wrap">
-    <div class="search">
+    <div class="search" role="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" inputmode="search" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="Marka veya ürün ara: Pınar, makarna, Parol…" aria-label="Marka veya ürün ara">
+      <input id="q" type="search" inputmode="search" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="Marka veya ürün ara…" aria-label="Marka veya ürün ara">
       <button id="clear" aria-label="Aramayı temizle"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
-    <div class="tabs" role="group" aria-label="Liste türü" id="tabs"></div>
+    <div class="tabs" role="group" aria-label="Liste türü" id="tabs"><button class="tab" aria-pressed="true" data-dom="gida">Gıda</button><button class="tab" aria-pressed="false" data-dom="ilac">İlaç</button><button class="tab" aria-pressed="false" data-dom="kozmetik">Bakım &amp; kozmetik</button><button class="tab" aria-pressed="false" data-dom="takviye">Takviye</button></div>
+    <script>try{var gd=localStorage.getItem('gk-dom');if(gd)document.querySelectorAll('#tabs .tab').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.dom===gd))})}catch(e){}</script>
   </div>
 </div>
-<div class="wrap"><main id="out"><div class="loading">Listeler yükleniyor…</div></main><footer class="sig">Sevdiğime, değerle. 🧡B</footer></div>
+<div class="wrap"><main id="out"><details class="key"><summary><span class="kg"><span class="kc v-ok"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5l4 4L13 9"></path><path d="M10.5 15.5l1 1L21.5 7"></path></svg></span>İki listede</span><span class="kc v-one"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Tek listede</span><span class="kc v-no"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg></span>Listede yok</span><span class="kc v-us"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z"></path></svg></span>Bizim listemiz</span></span><span class="kq">Renkler ne anlama geliyor?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span></summary><div class="legend"><div class="lg v-ok"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5l4 4L13 9"></path><path d="M10.5 15.5l1 1L21.5 7"></path></svg></span><div><b>Yeşil — iki listede de</b><span>Önceliğiniz: hem İstanbul hem Ankara onaylı.</span></div></div><div class="lg v-one"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><div><b>Sarı — tek listede</b><span>Yalnızca bir dernek onaylı: paketi inceleyerek alın.</span></div></div><div class="lg v-no"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg></span><div><b>Kırmızı — hiçbir listede yok</b><span>Kuralınıza göre almıyorsunuz.</span></div></div><div class="lg v-us"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z"></path></svg></span><div><b>Mavi — bizim listemiz</b><span>Sizin eklediğiniz ürünler; dernek onayı değil. Kimin, ne zaman eklediği yazılı.</span></div></div></div></details><div class="loading">Listeler yükleniyor…</div></main><footer class="sig">Sevdiğime, değerle. 🧡B</footer></div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -286,8 +312,9 @@ const SRC = {ist:'İST', ank:'ANK'};
 const SRCN = {ist:'İstanbul', ank:'Ankara'};
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 let REP = {}, D, CAT = {}, BN = {}, LBY = {}, GRP = {}, GBY = {}, CATL = {}, BNORM = {}, LN = [], PB = new Set();
-const st = {q:'', dom:'gida', view:'home', cat:null, open:new Set()};
-try { const s = localStorage.getItem('gk-dom'); if (s) st.dom = s; } catch (e) {}
+// pick: kullanıcının seçtiği sekme (kalıcı); dom: o an gösterilen. Aramadaki otomatik geçiş yalnızca dom'u değiştirir.
+const st = {q:'', dom:'gida', pick:'gida', view:'home', cat:null, open:new Set(), noAuto:false, keyOpen:false};
+try { const s = localStorage.getItem('gk-dom'); if (s && DOMAINS.some(d => d[0] === s)){ st.dom = s; st.pick = s; } } catch (e) {}
 
 function esc(s){return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function norm(s){
@@ -333,12 +360,17 @@ const KO = {ok:0, info:1, read:2, warn:3}, SO = {both:0, part:1, one:2, mixed:2}
 function lineOrder(a, b){
   return (KO[a.k] ?? 1) - (KO[b.k] ?? 1) || (SO[a.st] ?? 2) - (SO[b.st] ?? 2) || (a.s === b.s ? a.i - b.i : (a.s === 'ist' ? -1 : 1));
 }
-function lineRow(l, toks){
+function lineRow(l, toks, skip){
   const [cls, ic, tip] = lineMark(l);
-  const h = D.heads[l.h];
+  let h = D.heads[l.h];
+  // başlık, kartta ayrıca gösterilen notu içeriyorsa (ör. Ankara'nın yoğurt notu) başlığı paranteze kadar kısalt
+  if (h && skip && skip.length){
+    const hn = norm(h);
+    if (skip.some(x => hn.includes(x))){ const cut = h.split('(')[0].replace(/[\s:;,.-]+$/, ''); if (cut) h = cut; }
+  }
   return '<li class="li"><span class="src" title="' + SRCN[l.s] + ' listesi">' + SRC[l.s] + '</span>' +
     '<div><div class="tx">' + decorate(l.t, toks) + '</div>' + (h ? '<div class="hd">' + SRCN[l.s] + ' · ' + esc(h) + '</div>' : '') + '</div>' +
-    '<span class="mk ' + cls + '" title="' + tip + '" aria-label="' + tip + '">' + ic + '</span></li>';
+    '<span class="mk ' + cls + '" role="img" title="' + tip + '" aria-label="' + tip + '">' + ic + '</span></li>';
 }
 const GST = {
   both: ['c-ok', ICON.ok2, 'İki listede de'],
@@ -361,20 +393,30 @@ function groupStatus(b, c){
 }
 
 // ---- çevrimdışı kullanım
-let FROM_CACHE = false;
+let NET_DOWN = false, PENDING = false;  // NET_DOWN: service worker yeni listeyi arka planda alamadı
 function showUpd(){
   if (!D) return;
   const g = fmtDate(D.checked || D.generated);
-  const off = FROM_CACHE || !navigator.onLine;
+  const off = NET_DOWN || !navigator.onLine;
   const el = $('#upd');
   el.textContent = (g ? 'Son kontrol: ' + g : '') + (off ? ' · çevrimdışı' : '');
   el.title = off ? 'İnternet yok: telefona kaydedilmiş son liste gösteriliyor.' : '';
   el.classList.toggle('off', off);
 }
-addEventListener('online', () => { FROM_CACHE = false; showUpd(); });
+addEventListener('online', () => { NET_DOWN = false; showUpd(); });
 addEventListener('offline', showUpd);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   addEventListener('load', () => navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).catch(() => {}));
+}
+// liste telefondaki kopyadan hemen açılır; service worker yenisini arka planda alıp haber verir
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', e => {
+    const m = e.data || {};
+    if (m.type === 'ag-yok'){ NET_DOWN = true; showUpd(); }
+    else if (m.type === 'ag-var'){ NET_DOWN = false; showUpd(); }
+    else if (m.type === 'veri-yenilendi'){ NET_DOWN = false; if (D) reloadData(); else PENDING = true; }
+  });
+  if (navigator.serviceWorker.startMessages) navigator.serviceWorker.startMessages();
 }
 const STANDALONE = (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 
@@ -469,16 +511,15 @@ function usHome(){
   const mine = US.urunler.filter(it => it.alan === st.dom);
   const otherN = US.urunler.length - mine.length;
   const lim = st.usAll ? 999 : 5;
-  let h = '<div class="sec"><span>Bizim listemiz</span><span>' + mine.length + '</span></div><article class="card v-us">';
+  let h = '<div class="sec"><span>Bizim listemiz</span><span>' + (mine.length || '') + '</span></div><article class="card v-us">';
   if (US.hata && US.kaynak) h += '<div class="us-off">Sunucuya şu an ulaşılamıyor; telefondaki son liste gösteriliyor.</div>';
   if (mine.length){
     h += mine.slice(0, lim).map(it => usRow(it)).join('');
     if (mine.length > lim) h += '<button class="more" data-usall="1">Tümünü göster (' + mine.length + ')</button>';
-  } else {
-    h += '<div class="us-e">' + (otherN ? 'Bu sekmede henüz ürün yok. ' : '') + 'Derneklerde olmayan ama güvendiğiniz ürünleri buraya ekleyin. Kimin, ne zaman eklediği otomatik yazılır.</div>';
   }
   h += addBtn('');
-  h += '<div class="us-f">' + (USKEY ? 'Bu telefonda <b>' + esc(USNAME || '…') + '</b> olarak ekleniyor · <button class="lnk" data-unut="1">şifreyi bu telefondan sil</button>' : 'İlk eklemede ekleme şifrenizi bir kez girersiniz; bu telefonda saklanır.') +
+  h += '<div class="us-f">' + (mine.length ? '' : 'Derneklerde olmayan ama güvendiğiniz ürünler için; kimin, ne zaman eklediği yazılır.<br>') +
+    (USKEY ? 'Bu telefonda <b>' + esc(USNAME || '…') + '</b> olarak ekleniyor · <button class="lnk" data-unut="1">şifreyi bu telefondan sil</button>' : 'İlk eklemede ekleme şifrenizi bir kez girersiniz; bu telefonda saklanır.') +
     (otherN ? '<br>Diğer sekmelerde ' + otherN + ' ürün daha var.' : '') + '</div>';
   return h + usHistory(st.dom) + '</article>';
 }
@@ -671,7 +712,7 @@ async function submitAdd(){
       setUs({urunler: US.urunler, cikarilanlar: US.cikarilanlar, zaman: US.zaman}, US.kaynak || 'canli');
       saveUs();
       dlg.close();
-      if (j.urun.alan !== st.dom && !st.q){ st.dom = j.urun.alan; lsSet('gk-dom', st.dom); drawTabs(); }
+      if (j.urun.alan !== st.dom && !st.q){ st.pick = st.dom = j.urun.alan; lsSet('gk-dom', st.pick); drawTabs(); }
       rerender();
       const row = document.getElementById('us-' + (+j.urun.id));
       if (row){ row.classList.add('new'); row.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }
@@ -726,16 +767,8 @@ function usClick(t){
 }
 
 // ---- veri
-async function load(){
-  const repP = fetch('reports.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
-  try {
-    const r = await fetch('data.json', {cache:'no-cache'});
-    FROM_CACHE = !!(r.headers && r.headers.get && r.headers.get('x-gk-offline') === '1');
-    D = await r.json();
-  } catch (e) {
-    out.innerHTML = '<div class="card"><div class="empty">Liste verisi yüklenemedi. Sayfayı yenileyin.</div></div>';
-    return;
-  }
+function useData(d){
+  D = d; CAT = {}; BNORM = {}; LBY = {}; GRP = {}; GBY = {}; CATL = {}; PB = new Set();
   D.cats.forEach(c => { CAT[c.id] = c; c.nn = norm(c.n); });
   BN = D.brands;
   for (const k in BN) BNORM[k] = norm(BN[k]);
@@ -749,12 +782,33 @@ async function load(){
     (CATL[l.c] = CATL[l.c] || []).push(l);
   });
   D.groups.forEach(g => { GBY[g.b + '|' + g.c] = g; (GRP[g.b] = GRP[g.b] || []).push(g); });
+}
+async function load(){
+  const repP = fetch('reports.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
+  try {
+    const r = await fetch('data.json', {cache:'no-cache'});
+    useData(await r.json());
+  } catch (e) {
+    out.innerHTML = '<div class="card"><div class="empty">Liste verisi yüklenemedi. Sayfayı yenileyin.</div></div>';
+    return;
+  }
   showUpd();
   const rj = await repP;
   if (rj && rj.brands) REP = rj.brands;
   drawTabs();
   route();
   loadUs(true);
+  if (PENDING){ PENDING = false; reloadData(); }
+}
+// service worker yeni listeyi aldığında: sessizce yenile, içerik değiştiyse kısaca haber ver
+async function reloadData(){
+  try {
+    const d = await fetch('data.json?onbellek=1', {cache:'no-cache'}).then(r => r.json());
+    if (!d || !Array.isArray(d.lines)) return;
+    const changed = d.generated !== D.generated;
+    useData(d); showUpd(); drawTabs(); route();
+    if (changed) toast('Listeler güncellendi · ' + fmtDate(d.generated));
+  } catch (e) {}
 }
 
 // ---- arama
@@ -851,8 +905,9 @@ function brandCardShell(b, v, ic, title, sub, cs, byC, toks, full, sartli){
     const shown = new Set(ls.map(l => l.i)), extra = [];
     ls.forEach(l => l.st === 'both' && (l.p || []).forEach(pid => { const pl = LN[pid]; if (pl && pl.c !== c && pl.b === b && !shown.has(pid)) { shown.add(pid); extra.push(pl); } }));
     const notes = (CATL[c] || []).filter(n => n.k === 'note' && (n.af || /serbest|ko[sş]ulu|olmamas/i.test(n.t))).slice(0, 3);
+    const nskip = notes.map(n => norm(n.t)).filter(x => x.length > 20);  // aynı not başlıkta da geçiyorsa bir kez göster
     rows += '<div class="crow"><div class="chead"><span class="cname">' + esc(CAT[c].n) + '</span>' + chip(s) + '</div><ul class="ls">' +
-      ls.map(l => lineRow(l, toks)).join('') + extra.map(l => lineRow(l, toks)).join('') + '</ul>' +
+      ls.map(l => lineRow(l, toks, nskip)).join('') + extra.map(l => lineRow(l, toks, nskip)).join('') + '</ul>' +
       (extra.length ? '<p class="xc">Diğer listede bu ürün başka bir başlık altında yer alıyor.</p>' : '') +
       notes.map(n => '<div class="note' + (n.af ? ' af' : '') + '"><span class="src">' + SRC[n.s] + '</span>' + esc(n.t) + '</div>').join('') + '</div>';
   });
@@ -882,16 +937,38 @@ function afNotes(dom){
   return (LN.filter(l => l.k === 'note' && l.af && l.d === dom)).filter(l => { const k = l.c; if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
+// ---- son aramalar (telefonda saklanır; markette aynı ürüne tekrar bakmak tek dokunuş)
+function recentGet(){
+  try { const a = JSON.parse(lsGet('gk-son') || '[]'); return Array.isArray(a) ? a.filter(x => typeof x === 'string').slice(0, 6) : []; } catch (e) { return []; }
+}
+function recentSave(q){
+  q = String(q || '').trim().replace(/\s+/g, ' ');
+  const n = norm(q);
+  if (q.length < 2 || q.length > 40 || !n) return;
+  lsSet('gk-son', JSON.stringify([q].concat(recentGet().filter(x => norm(x) !== n)).slice(0, 6)));
+}
+function recentRow(){
+  const a = recentGet();
+  if (!a.length) return '';
+  return '<div class="recent"><span class="rl">Son aramalar</span>' + a.map(x => '<button class="sg" data-q="' + esc(x) + '">' + esc(x) + '</button>').join('') +
+    '<button class="lnk" data-sonsil="1">temizle</button></div>';
+}
+
 // ---- görünümler
 function drawTabs(){
   $('#tabs').innerHTML = DOMAINS.map(([id, n]) => '<button class="tab" aria-pressed="' + (st.dom === id) + '" data-dom="' + id + '">' + n + '</button>').join('');
 }
 function legend(){
-  return '<div class="legend">' +
-    '<div class="lg v-ok"><span class="dot">' + ICON.ok2 + '</span><div><b>Yeşil — iki listede de</b><span>Önceliğiniz: hem İstanbul hem Ankara onaylı.</span></div></div>' +
-    '<div class="lg v-one"><span class="dot">' + ICON.ok + '</span><div><b>Sarı — tek listede</b><span>Yalnızca bir dernek onaylı: paketi inceleyerek alın.</span></div></div>' +
-    '<div class="lg v-no"><span class="dot">' + ICON.no + '</span><div><b>Kırmızı — hiçbir listede yok</b><span>Kuralınıza göre almıyorsunuz.</span></div></div>' +
-    (API ? '<div class="lg v-us"><span class="dot">' + ICON.us + '</span><div><b>Mavi — bizim listemiz</b><span>Sizin eklediğiniz ürünler; dernek onayı değil. Kimin, ne zaman eklediği yazılı.</span></div></div>' : '') + '</div>';
+  const rows = [
+    ['v-ok', ICON.ok2, 'İki listede', 'Yeşil — iki listede de', 'Önceliğiniz: hem İstanbul hem Ankara onaylı.'],
+    ['v-one', ICON.ok, 'Tek listede', 'Sarı — tek listede', 'Yalnızca bir dernek onaylı: paketi inceleyerek alın.'],
+    ['v-no', ICON.no, 'Listede yok', 'Kırmızı — hiçbir listede yok', 'Kuralınıza göre almıyorsunuz.']
+  ];
+  if (API) rows.push(['v-us', ICON.us, 'Bizim listemiz', 'Mavi — bizim listemiz', 'Sizin eklediğiniz ürünler; dernek onayı değil. Kimin, ne zaman eklediği yazılı.']);
+  return '<details class="key"' + (st.keyOpen ? ' open' : '') + '><summary><span class="kg">' +
+    rows.map(r => '<span class="kc ' + r[0] + '"><span class="dot" aria-hidden="true">' + r[1] + '</span>' + r[2] + '</span>').join('') +
+    '</span><span class="kq">Renkler ne anlama geliyor?' + ICON.down + '</span></summary>' +
+    '<div class="legend">' + rows.map(r => '<div class="lg ' + r[0] + '"><span class="dot" aria-hidden="true">' + r[1] + '</span><div><b>' + r[3] + '</b><span>' + r[4] + '</span></div></div>').join('') + '</div></details>';
 }
 // son 8 gün içinde liste değiştiyse ana sayfanın tepesinde göster
 function weekChanges(){
@@ -909,7 +986,7 @@ function weekChanges(){
 function home(){
   const cats = D.cats.filter(c => c.d === st.dom && (CATL[c.id] || []).some(l => l.k === 'ok' || (l.k === 'note' && l.af)));
   cats.sort((a, b) => a.n.localeCompare(b.n, 'tr'));
-  let h = legend() + weekChanges() + usHome();
+  let h = recentRow() + legend() + weekChanges() + usHome();
   const af = afNotes(st.dom);
   if (st.dom === 'ilac') h += ilacFirms();
   h += '<div class="sec"><span>Kategoriler</span><span>' + cats.length + '</span></div><div class="grid">' + cats.map(catTile).join('') + '</div>';
@@ -961,11 +1038,13 @@ function infoBlocks(){
     '<p class="foot">Dernekler, üreticilerin üretim koşullarını haber vermeden değiştirebildiğini ve listede olsa bile ambalajdaki alerjen bilgisinin okunması gerektiğini belirtiyor. Bu sayfa listeleri birleştirir; onay vermez.</p>';
 }
 function results(q){
+  // her arama kullanıcının seçtiği sekmeden başlar; aşağıdaki otomatik geçiş yalnızca bu arama içindir
+  if (st.dom !== st.pick){ st.dom = st.pick; drawTabs(); }
   let r = search(q);
   if (!r) return home();
   let h = '';
-  // bu sekmede hiç sonuç yoksa diğer sekmelere bak (ör. Gıda'da "Parol" → İlaç)
-  if (!r.brands.length && !r.cats.length){
+  // bu sekmede hiç sonuç yoksa diğer sekmelere bak (ör. Gıda'da "Parol" → İlaç); sekme elle seçildiyse bakma
+  if (!r.brands.length && !r.cats.length && !st.noAuto){
     const from = st.dom;
     let moved = null;
     for (const [d, n] of DOMAINS){
@@ -1020,10 +1099,16 @@ function results(q){
   if (r.loose.length){
     h += '<div class="sec"><span>Notlarda geçiyor</span></div><div class="card"><div class="cats">' + r.loose.slice(0, 8).map(l => '<div class="crow"><div class="chead"><span class="cname">' + esc(CAT[l.c].n) + '</span></div><ul class="ls">' + lineRow(l, r.qt) + '</ul></div>').join('') + '</div></div>';
   }
+  let other = [];
   if (none){
     const sg = suggestions(r.qn);
-    const other = DOMAINS.filter(d => d[0] !== st.dom).map(d => [d, LN.filter(l => l.d === d[0] && r.qt.every(t => l.nn.split(' ').some(w => w.startsWith(t)))).length]).filter(x => x[1]);
+    other = DOMAINS.filter(d => d[0] !== st.dom).map(d => [d, LN.filter(l => l.d === d[0] && r.qt.every(t => l.nn.split(' ').some(w => w.startsWith(t)))).length]).filter(x => x[1]);
     h += usBlock;
+    if (other.length){
+      // sekme elle seçildi; burada yok ama başka listelerde var: kırmızı karar verme
+      h += '<article class="card"><div class="verdict"><span class="dot" style="background:var(--soft);color:var(--mut)">' + ICON.eye + '</span><div><p class="vt">“' + esc(q.trim()) + '” ' + DOMAINS.find(d => d[0] === st.dom)[1] + ' listesinde yok</p><p class="vs">Başka listelerde sonuç var:</p></div></div>' +
+        '<div class="sugg">' + other.map(([d, n]) => '<button class="sg" data-dom="' + d[0] + '">' + d[1] + ' listesinde ' + n + ' sonuç</button>').join('') + '</div></article>';
+    } else {
     h += '<article class="card v-no"><div class="verdict"><span class="dot">' + ICON.no + '</span><div>' +
       (us.length ? '<p class="vt">“' + esc(q.trim()) + '” dernek listelerinde yok</p><p class="vs"><b class="k">Derneklerde bulunamadı</b> · Yalnızca bizim listemizde var (yukarıda).</p>'
         : '<p class="vt">“' + esc(q.trim()) + '” hiçbir listede yok</p><p class="vs"><b class="k">Hiçbir listede bulunamadı</b> · Kuralınıza göre almıyorsunuz.</p>') + '</div></div>' +
@@ -1035,8 +1120,9 @@ function results(q){
       const af = afNotes('gida');
       if (af.length) h += '<details class="fold"><summary>Ama şu kategorilerde Ankara tüm markaları serbest sayıyor</summary><div class="fbody">' + af.map(n => '<p><b>' + esc(CAT[n.c].n) + ':</b> ' + esc(n.t) + '</p>').join('') + '</div></details>';
     }
+    }
   }
-  if (!(none && !us.length)) h += addLine;  // boş sonuçta ekleme düğmesi zaten kırmızı kartın içinde
+  if (!(none && !us.length && !other.length)) h += addLine;  // boş sonuçta ekleme düğmesi zaten kırmızı kartın içinde
   out.innerHTML = h;
 }
 function catView(id, fromSearch){
@@ -1050,7 +1136,7 @@ function catView(id, fromSearch){
   const notes = ls.filter(l => l.k === 'note');
   const n = catCounts(id);
   let h = (fromSearch ? '' : '<button class="back" data-back="1">' + ICON.back + 'Tüm kategoriler</button>') +
-    '<h2>' + esc(c.n) + '</h2><p class="small">' + n.both + ' marka iki listede · ' + n.part + ' marka iki listede ama ürünler farklı · ' + n.ist + ' sadece İstanbul · ' + n.ank + ' sadece Ankara</p>';
+    '<h2>' + esc(c.n) + '</h2>' + (() => { const ps = [[n.both, 'marka iki listede'], [n.part, 'marka iki listede ama ürünler farklı'], [n.ist, 'sadece İstanbul'], [n.ank, 'sadece Ankara']].filter(x => x[0]).map(x => x[0] + ' ' + x[1]); return ps.length ? '<p class="small">' + ps.join(' · ') + '</p>' : ''; })();
   if (notes.length) h += notes.map(nn => '<div class="note' + (nn.af ? ' af' : '') + '"><span class="src">' + SRC[nn.s] + '</span>' + esc(nn.t) + '</div>').join('');
   if (!fromSearch) h += usCatBlock(c);  // aramadan gelindiyse eşleşmeler zaten yukarıda
   const block = (key, title) => {
@@ -1069,6 +1155,7 @@ function catView(id, fromSearch){
 
 // ---- yönlendirme
 function route(){
+  if (!D) return;  // liste daha gelmedi
   const hsh = (location.hash || '').slice(1);
   if (hsh.startsWith('k-') && CAT[hsh.slice(2)]){
     st.view = 'cat'; st.cat = hsh.slice(2);
@@ -1077,35 +1164,47 @@ function route(){
     return;
   }
   st.view = st.q ? 'search' : 'home';
-  if (st.q) results(st.q); else home();
+  if (st.q) results(st.q);
+  else { if (st.dom !== st.pick){ st.dom = st.pick; drawTabs(); } home(); }
 }
 let tmr;
 qi.addEventListener('input', () => {
-  st.q = qi.value; clearB.classList.toggle('on', !!st.q); st.open.clear();
+  st.q = qi.value; st.noAuto = false; clearB.classList.toggle('on', !!st.q); st.open.clear();
   document.body.classList.toggle('searching', !!st.q.trim());
   clearTimeout(tmr); tmr = setTimeout(() => { if (location.hash) history.replaceState(null, '', location.pathname + location.search); route(); }, 90);
 });
-qi.addEventListener('keydown', e => { if (e.key === 'Enter') qi.blur(); });
-clearB.addEventListener('click', () => { qi.value = ''; st.q = ''; clearB.classList.remove('on'); document.body.classList.remove('searching'); route(); qi.focus(); });
-$('#tabs').addEventListener('click', e => {
-  const b = e.target.closest('[data-dom]'); if (!b) return;
-  st.dom = b.dataset.dom; try { localStorage.setItem('gk-dom', st.dom); } catch (x) {}
+qi.addEventListener('keydown', e => { if (e.key === 'Enter'){ recentSave(qi.value); qi.blur(); } });
+qi.addEventListener('blur', () => { if (st.q.trim()) recentSave(st.q); });
+clearB.addEventListener('click', () => { recentSave(st.q); qi.value = ''; st.q = ''; clearB.classList.remove('on'); document.body.classList.remove('searching'); route(); qi.focus(); });
+// sekme seçimi: kullanıcının tercihi (kalıcı); o anki aramada otomatik geçiş yapılmaz
+function pickDom(d){
+  st.pick = st.dom = d; st.noAuto = !!st.q; lsSet('gk-dom', d);
   drawTabs(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); route();
+}
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-dom]'); if (!b || !D) return;
+  pickDom(b.dataset.dom);
 });
 out.addEventListener('click', e => {
   const t = e.target.closest('button,[data-cat]'); if (!t) return;
+  if (st.q.trim()) recentSave(st.q);  // sonuçla ilgilenildi: aramayı son aramalara ekle
   if (usClick(t)) return;
+  if (t.dataset.sonsil){ lsSet('gk-son', null); route(); return; }
   if (t.dataset.cat){ location.hash = 'k-' + t.dataset.cat; window.scrollTo(0, 0); return; }
   if (t.dataset.back){ history.length > 1 ? history.back() : (location.hash = ''); return; }
   if (t.dataset.q){ qi.value = t.dataset.q; qi.dispatchEvent(new Event('input')); return; }
-  if (t.dataset.dom){ st.dom = t.dataset.dom; drawTabs(); route(); return; }
+  if (t.dataset.dom){ pickDom(t.dataset.dom); return; }
   if (t.dataset.brand){ st.open.add(t.dataset.brand); route(); return; }
   if (t.dataset.ob){ const k = t.dataset.ob; st.open.has(k) ? st.open.delete(k) : st.open.add(k); out.innerHTML = catView(st.cat || k.split('|')[0], st.view !== 'cat'); return; }
 });
+out.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('key')) st.keyOpen = e.target.open; }, true);
 window.addEventListener('hashchange', route);
 const bar = $('#bar');
 const io = new IntersectionObserver(([en]) => bar.classList.toggle('stuck', !en.isIntersecting), {rootMargin:'-1px 0px 0px 0px'});
 io.observe(document.querySelector('header.top'));
+// liste gelmeden önce sekmeleri ve üst bölümü çiz: liste gelince sayfa kaymasın
+drawTabs();
+out.innerHTML = recentRow() + legend() + '<div class="loading">Listeler yükleniyor…</div>';
 load();
 }
 </script>
