@@ -546,16 +546,19 @@ function openAdd(q){
 async function whoAmI(){
   if (!USKEY) return;
   try {
-    const r = await fetch(API + '/ben', {headers: {'Authorization': 'Bearer ' + USKEY}});
+    const r = await fetch(API + '/ben', {headers: authH(USKEY)});
     if (r.ok){ const j = await r.json(); if (j.ad){ USNAME = j.ad; lsSet('gk-ad', USNAME); rerender(); } }
   } catch (e) {}
 }
 function forgetKey(){ USKEY = ''; USNAME = ''; lsSet('gk-sifre', null); lsSet('gk-ad', null); }
+// HTTP başlıkları ı, ş, ğ gibi harfleri taşıyamaz; şifre kodlanarak gönderilir, sunucu çözer
+const authH = k => ({'Authorization': 'Bearer ' + encodeURIComponent(String(k).normalize('NFC'))});
+function netErr(e){ return navigator.onLine === false ? 'İnternet bağlantısı yok; bağlanınca yeniden deneyin.' : 'Sunucuya ulaşılamadı; biraz sonra yeniden deneyin.' + (e && e.message ? ' (' + e.message + ')' : ''); }
 async function submitAdd(){
   const f = dlg.querySelector('form'), el = n => f.elements.namedItem(n), err = dlg.querySelector('.err'), btn = f.querySelector('.btn');
   const pick = n => { const c = f.querySelector('input[name=' + n + ']:checked'); return c ? c.value : ''; };
   const v = {alan: pick('alan'), marka: el('marka').value.trim(), urun: el('urun').value.trim(), kategori: el('kategori').value.trim(), dayanak: pick('dayanak'), notu: el('notu').value.trim()};
-  const key = USKEY || el('sifre').value.trim();
+  const key = USKEY || el('sifre').value.normalize('NFC').trim();
   err.textContent = '';
   if (!v.marka || !v.urun){ err.textContent = 'Marka ve ürün adını yazın.'; (v.marka ? el('urun') : el('marka')).focus(); return; }
   if (!v.dayanak){ err.textContent = 'Neye dayanarak eklediğinizi seçin.'; return; }
@@ -563,7 +566,7 @@ async function submitAdd(){
   if (key.length < 8){ err.textContent = 'Ekleme şifrenizi yazın (en az 8 karakter).'; el('sifre').focus(); return; }
   btn.disabled = true; btn.textContent = 'Ekleniyor…';
   try {
-    const r = await fetch(API + '/ekle', {method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key}, body: JSON.stringify(v)});
+    const r = await fetch(API + '/ekle', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(key)), body: JSON.stringify(v)});
     let j = {}; try { j = await r.json(); } catch (x) {}
     if (r.status !== 401 && r.status < 500 && !USKEY){ USKEY = key; lsSet('gk-sifre', key); }  // sunucu şifreyi tanıdı
     if (r.status === 201 && j.urun){
@@ -592,7 +595,7 @@ async function submitAdd(){
       if (!USNAME && USKEY) whoAmI();
     }
   } catch (e) {
-    err.textContent = 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip yeniden deneyin.';
+    err.textContent = netErr(e);
   }
   btn.disabled = false; btn.textContent = 'Listemize ekle';
 }
@@ -600,7 +603,7 @@ async function removeUs(id, t){
   if (!USKEY) return rerender();
   const box = t.closest('.cf'); if (box) box.textContent = 'Çıkarılıyor…';
   try {
-    const r = await fetch(API + '/cikar', {method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + USKEY}, body: JSON.stringify({id})});
+    const r = await fetch(API + '/cikar', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(USKEY)), body: JSON.stringify({id})});
     let j = {}; try { j = await r.json(); } catch (x) {}
     if (r.ok && j.urun){
       US.urunler = US.urunler.filter(x => +x.id !== id); US.cikarilanlar.unshift(j.urun); saveUs();
@@ -610,7 +613,7 @@ async function removeUs(id, t){
     if (r.status === 401){ forgetKey(); toast('Şifre tanınmadı; bu telefondan silindi. Eklerken yeniden girebilirsiniz.'); rerender(); return; }
     toast(j.hata || ('Çıkarılamadı (hata ' + r.status + ').'));
     if (r.status === 404) loadUs(true); else rerender();
-  } catch (e) { toast('Sunucuya ulaşılamadı; internet bağlantınızı kontrol edin.'); rerender(); }
+  } catch (e) { toast(netErr(e)); rerender(); }
 }
 function usClick(t){
   const ds = t.dataset;
