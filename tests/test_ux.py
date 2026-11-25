@@ -77,8 +77,11 @@ async def main():
             await pg.set_viewport_size({'width': w, 'height': 844}); await pg.wait_for_timeout(150)
             fit = await pg.evaluate("(() => { const t = document.querySelector('#tabs'); return [t.scrollWidth, t.clientWidth]; })()")
             check(f'{w}px: dört sekme sığıyor', fit[0] <= fit[1], fit)
-        fits = await pg.evaluate("""(() => { const i = document.querySelector('#q'), c = document.createElement('canvas').getContext('2d'); const cs = getComputedStyle(i);
-          c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; return c.measureText(i.placeholder).width < i.clientWidth - 100; })()""")
+        # yazı tipi yüklenmeden ölçülürse yedek yazı tipiyle ölçülür (makineden makineye değişir): önce yüklensin
+        fits = await pg.evaluate("""async () => { const i = document.querySelector('#q'), cs = getComputedStyle(i);
+          await document.fonts.load(cs.fontWeight + ' ' + cs.fontSize + ' Manrope', i.placeholder); await document.fonts.ready;
+          const c = document.createElement('canvas').getContext('2d');
+          c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; return c.measureText(i.placeholder).width < i.clientWidth - 100; }""")
         check('arama ipucu kesilmiyor', fits)
         await pg.set_viewport_size({'width': 390, 'height': 844})
         # I) erişilebilirlik
