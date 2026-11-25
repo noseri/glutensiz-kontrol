@@ -12,7 +12,7 @@ preview_urls = false
 # Tarayıcıdan yalnızca bu adresteki uygulama istek atabilir.
 IZINLI_KOKENLER = "https://noseri.github.io"
 # Gizli değerin adı → listede görünen ad. Şifrelerin kendisi GitHub'daki ANAHTAR_1 / ANAHTAR_2 gizli değerlerinden gelir.
-KISILER = '{"ANAHTAR_1": "Adem", "ANAHTAR_2": "B"}'
+KISILER = '{"ANAHTAR_1": "mayildiz", "ANAHTAR_2": "heyybenbus"}'
 
 [[d1_databases]]
 binding = "DB"
