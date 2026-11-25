@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Arayüz: açılış, sekmeler, son aramalar, renk anahtarı, dokunma alanları, erişilebilirlik (şifresiz telefon)."""
-import asyncio, os, sys
+import asyncio, json, os, sys
+from datetime import datetime, timedelta
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from playwright.async_api import async_playwright
-from ortak import U, A, check, bitir, tarayici, ara, axe_ihlal
+from ortak import U, A, KOK, check, bitir, tarayici, ara, axe_ihlal
 
 async def secili(pg): return await pg.locator('.tab[aria-pressed=true]').inner_text()
 async def main():
@@ -99,6 +100,22 @@ async def main():
         check('boş sekmede sade kart (önce ekle düğmesi, uzun metin yok)', await card.locator('.us-e').count() == 0 and await card.locator(':scope > .addb').count() == 1, await card.inner_text())
         check('boşken başlıkta 0 yazmıyor', (await pg.locator('.sec', has_text='Bizim listemiz').inner_text()).strip() == 'Bizim listemiz')
         check('şifre kayıtlıyken renk anahtarında 4 renk', await pg.locator('.kc').count() == 4)
+        # K) son kontrol 2 haftadan eskiyse (internetsiz kalındıysa ya da kontrol yapılamadıysa) belirgin uyarı
+        veri = json.load(open(os.path.join(KOK, 'tests', 'veri', 'data.json'), encoding='utf-8'))
+        kt = datetime.fromisoformat(veri['checked'])
+        for gun_, eski in ((3, False), (20, True)):
+            ctx2 = await b.new_context(viewport={'width': 375, 'height': 844}, service_workers='block', is_mobile=True, has_touch=True)
+            p2 = await ctx2.new_page()
+            await p2.clock.set_fixed_time(kt + timedelta(days=gun_))
+            await p2.goto(U); await p2.wait_for_selector('.grid'); await p2.wait_for_timeout(300)
+            t = await p2.inner_text('#upd'); c = await p2.get_attribute('#upd', 'class')
+            if eski:
+                sig = await p2.evaluate("(() => { const e = document.querySelector('#upd'); return e.scrollWidth <= e.clientWidth; })()")
+                check('20 gün: sarı uyarı, kaç gün olduğu yazıyor, tek satıra sığıyor', 'eski' in c and t.endswith('· 20 gün önce') and sig, (t, c))
+                check('uyarının açıklaması (dokununca/üstüne gelince)', 'paketi okuyun' in await p2.get_attribute('#upd', 'title'))
+            else:
+                check('3 gün: normal görünüm', 'eski' not in c and 'gün önce' not in t, (t, c))
+            await ctx2.close()
         check('sayfa hatası yok', not errs, errs)
         await b.close()
     bitir()

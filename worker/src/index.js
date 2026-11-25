@@ -6,10 +6,11 @@
  *   GET  /veri   → Bizim listemiz (listede ve çıkarılmış), tepkiler ve dokunma kayıtları: tek istekte
  *   POST /ekle   → ürün ekle   {alan, marka, urun, kategori?, dayanak, notu?}
  *   POST /cikar  → listeden çıkar {id}
+ *   POST /kontrol → Bizim listemiz ürününü yeniden kontrol ettim {id} (paket yeniden okundu; kimin, ne zaman)
  *   POST /duzelt → düzelt {id, alan, marka, urun, kategori?, dayanak, notu?}: eski kayıt "düzeltildi" olarak
  *                  geçmişe alınır, düzeltilmiş hali yeni kayıt olarak eklenir (onceki = eski kaydın id'si)
  *   POST /tepki  → kendi tepkini kaydet ya da kaldır {anahtar, tepki, favori, neden?, alan, marka, urun}
- *   POST /dokunma     → "bize dokundu" kaydı ekle {anahtar, tarih, notu?, parti?, alan, marka, urun}
+ *   POST /dokunma     → "bize dokundu" kaydı ekle {anahtar, tarih, neden?, notu?, parti?, alan, marka, urun}
  *   POST /dokunma-sil → kendi dokunma kaydını sil {id}
  *   Ürün anahtarı: 'u|<numara>' dernek satırı (haftalık derlemenin verdiği kalıcı numara) ya da
  *   'b|<ilk kaydın id'si>' Bizim listemiz ürünü (düzeltmelerde değişmez).
@@ -22,10 +23,12 @@
 
 const ALANLAR = new Set(['gida', 'ilac', 'kozmetik', 'takviye']);
 const DAYANAKLAR = new Set(['paket', 'uretici', 'analiz', 'deneyim', 'diger']);
-const SINIR = { marka: 60, urun: 120, kategori: 60, notu: 280, tmarka: 80, turun: 300, neden: 140, dnotu: 200, parti: 40 };
-const ETIKET = { marka: 'Marka', urun: 'Ürün adı', kategori: 'Kategori', notu: 'Not', tmarka: 'Marka', turun: 'Ürün adı', neden: 'Neden', dnotu: 'Not', parti: 'Parti no' };
+const SINIR = { marka: 60, urun: 120, kategori: 60, notu: 280, tmarka: 80, turun: 300, neden: 140, dnotu: 200, parti: 80 };
+const ETIKET = { marka: 'Marka', urun: 'Ürün adı', kategori: 'Kategori', notu: 'Not', tmarka: 'Marka', turun: 'Ürün adı', neden: 'Neden', dnotu: 'Not', parti: 'Paket bilgisi' };
+const DNEDEN = new Set(['bulasma', 'agir', 'baska', 'bilinmiyor']);  // dokunmanın olası nedeni
 const TSUTUN = 'anahtar, kisi, tepki, favori, neden, alan, marka, urun, zaman';
-const DSUTUN = 'id, anahtar, kisi, tarih, notu, parti, alan, marka, urun, zaman';
+const DSUTUN = 'id, anahtar, kisi, tarih, neden, notu, parti, alan, marka, urun, zaman';
+const KSUTUN = 'id, urun, kisi, zaman';
 const SUTUNLAR = 'id, alan, marka, urun, kategori, dayanak, notu, ekleyen, eklendi, cikaran, cikarildi, onceki';
 const enc = new TextEncoder();
 
@@ -144,14 +147,15 @@ async function govde(req) {
 
 // ---- işlemler
 async function veri(env) {
-  const [u, t, d] = await env.DB.batch([
+  const [u, t, d, k] = await env.DB.batch([
     env.DB.prepare(`SELECT ${SUTUNLAR} FROM urunler ORDER BY id DESC`),
     env.DB.prepare(`SELECT ${TSUTUN} FROM tepkiler ORDER BY zaman DESC`),
     env.DB.prepare(`SELECT ${DSUTUN} FROM dokunmalar ORDER BY tarih DESC, id DESC`),
+    env.DB.prepare(`SELECT ${KSUTUN} FROM kontroller ORDER BY id DESC`),
   ]);
   const urunler = [], cikarilanlar = [];
   for (const r of u.results) (r.cikarildi ? cikarilanlar : urunler).push(r);
-  return { zaman: new Date().toISOString(), urunler, cikarilanlar, tepkiler: t.results, dokunmalar: d.results };
+  return { zaman: new Date().toISOString(), urunler, cikarilanlar, tepkiler: t.results, dokunmalar: d.results, kontroller: k.results };
 }
 
 // ürün alanlarını denetle ve sadeleştir (ekleme ve düzeltmede ortak)
@@ -233,6 +237,18 @@ async function cikar(req, env, ad) {
   return r;
 }
 
+// "kontrol ettim": paketi yeniden okudum (yalnızca listedeki ürün için; kayıt değiştirilemez)
+async function kontrol(req, env, ad) {
+  const g = await govde(req);
+  const id = Number(g.id);
+  if (!Number.isSafeInteger(id) || id < 1) throw new Hata(400, 'Hangi ürünün kontrol edildiği belirtilmemiş.');
+  const r = await env.DB.prepare(
+    `INSERT INTO kontroller (urun, kisi, zaman) SELECT id, ?, ? FROM urunler WHERE id = ? AND cikarildi IS NULL RETURNING ${KSUTUN}`
+  ).bind(ad, new Date().toISOString(), id).first();
+  if (!r) throw new Hata(404, 'Bu ürün listede değil; çıkarılmış ya da düzeltilmiş olabilir.');
+  return { kontrol: r };
+}
+
 // ---- tepkiler ve dokunma kayıtları (kişisel: okuması da şifre ister)
 // hangi ürün: anahtar + o anki ad (liste değişse de ne olduğu bilinsin)
 function urunBilgisi(g) {
@@ -279,10 +295,12 @@ async function dokunmaEkle(req, env, ad) {
   if (tarih > bugun()) throw new Hata(400, 'İleri bir tarih seçilemez.');
   if (tarih < '2000-01-01') throw new Hata(400, 'Tarih çok eski.');
   const notu = temizle(g.notu, 'dnotu', false), parti = temizle(g.parti, 'parti', false);
+  const neden = g.neden == null || g.neden === '' ? null : String(g.neden);
+  if (neden !== null && !DNEDEN.has(neden)) throw new Hata(400, 'Geçersiz neden.');
   const r = await env.DB.prepare(
-    `INSERT INTO dokunmalar (anahtar, kisi, tarih, notu, parti, alan, marka, urun, zaman)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ${DSUTUN}`
-  ).bind(u.anahtar, ad, tarih, notu, parti, u.alan, u.marka, u.urun, new Date().toISOString()).first();
+    `INSERT INTO dokunmalar (anahtar, kisi, tarih, neden, notu, parti, alan, marka, urun, zaman)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ${DSUTUN}`
+  ).bind(u.anahtar, ad, tarih, neden, notu, parti, u.alan, u.marka, u.urun, new Date().toISOString()).first();
   return { dokunma: r };
 }
 
@@ -316,7 +334,7 @@ export default {
     try {
       if (req.method === 'GET' && yol === '/') return yanit({ ad: 'Glutensiz Kontrol · Bizim listemiz', durum: 'çalışıyor' }, 200, cors);
       const islem = req.method + ' ' + yol;
-      if (!['GET /ben', 'GET /veri', 'POST /ekle', 'POST /cikar', 'POST /duzelt', 'POST /tepki', 'POST /dokunma', 'POST /dokunma-sil'].includes(islem))
+      if (!['GET /ben', 'GET /veri', 'POST /ekle', 'POST /cikar', 'POST /duzelt', 'POST /kontrol', 'POST /tepki', 'POST /dokunma', 'POST /dokunma-sil'].includes(islem))
         throw new Hata(404, 'Böyle bir adres yok.');
       const ad = await kim(req, env);
       if (!ad) {
@@ -327,6 +345,7 @@ export default {
       if (islem === 'POST /ekle') return yanit({ urun: await ekle(req, env, ad) }, 201, cors);
       if (islem === 'POST /duzelt') return yanit(await duzelt(req, env, ad), 200, cors);
       if (islem === 'GET /veri') return yanit(await veri(env), 200, cors);
+      if (islem === 'POST /kontrol') return yanit(await kontrol(req, env, ad), 201, cors);
       if (islem === 'POST /tepki') return yanit(await tepkiVer(req, env, ad), 200, cors);
       if (islem === 'POST /dokunma') return yanit(await dokunmaEkle(req, env, ad), 201, cors);
       if (islem === 'POST /dokunma-sil') return yanit(await dokunmaSil(req, env, ad), 200, cors);

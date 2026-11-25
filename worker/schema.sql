@@ -70,11 +70,32 @@ CREATE TABLE IF NOT EXISTS dokunmalar (
   anahtar TEXT NOT NULL,
   kisi    TEXT NOT NULL,
   tarih   TEXT NOT NULL,              -- olayın günü (YYYY-AA-GG, Türkiye saati)
+  neden   TEXT CHECK (neden IN ('bulasma', 'agir', 'baska', 'bilinmiyor')),  -- olası neden
   notu    TEXT,
-  parti   TEXT,                       -- parti / seri no
+  parti   TEXT,                       -- paket bilgisi: parti no, son kullanma tarihi, üretici
   alan    TEXT NOT NULL CHECK (alan IN ('gida', 'ilac', 'kozmetik', 'takviye')),
   marka   TEXT NOT NULL,
   urun    TEXT NOT NULL,
   zaman   TEXT NOT NULL               -- kaydedildiği an (sunucu saati)
 );
 CREATE INDEX IF NOT EXISTS dokunmalar_anahtar ON dokunmalar (anahtar);
+
+-- "Kontrol ettim": Bizim listemiz ürününün paketi yeniden okundu (kim, ne zaman). Kayıt değiştirilemez ve silinmez.
+-- urun: o anki kaydın id'si; düzeltmeden sonra da eski kayda bağlı kontroller sayılır (uygulama zinciri izler).
+CREATE TABLE IF NOT EXISTS kontroller (
+  id    INTEGER PRIMARY KEY AUTOINCREMENT,
+  urun  INTEGER NOT NULL,
+  kisi  TEXT NOT NULL,
+  zaman TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS kontroller_urun ON kontroller (urun);
+CREATE TRIGGER IF NOT EXISTS kontroller_degismez
+BEFORE UPDATE ON kontroller
+BEGIN
+  SELECT RAISE(ABORT, 'Kontrol kaydı değiştirilemez.');
+END;
+CREATE TRIGGER IF NOT EXISTS kontroller_silinmez
+BEFORE DELETE ON kontroller
+BEGIN
+  SELECT RAISE(ABORT, 'Kontrol kaydı silinemez.');
+END;

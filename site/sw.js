@@ -1,5 +1,7 @@
 /* Glutensiz Kontrol — hızlı açılış ve çevrimdışı çalışma
- * Sayfa (index.html): önce ağ; 1,5 sn'de yanıt gelmezse telefondaki kopya. Yeni sürüm arka planda yine alınır.
+ * Sayfa (index.html): önce ağ; 1,5 sn'de yanıt gelmezse telefondaki kopya. Yeni sürüm arka planda yine alınır;
+ *   ancak stil ve betik dosyaları da önbelleğe alındıktan sonra saklanır (çevrimdışı açılışta sürümler karışmaz).
+ * Stil ve betikler (app.css, js/*.js): adlarında sürüm var (?v=…, yayında GitHub damgalar); aynı sürüm hep önbellekten.
  * Listeler (data.json, reports.json): telefondaki kopya hemen verilir, yenisi arka planda alınır.
  * Kişisel veriler (Bizim listemiz, tepkiler) şifreyle sunucudan gelir; burada saklanmaz.
  *   data.json değiştiyse sayfaya "veri-yenilendi" iletisi gider ve liste kendiliğinden yenilenir.
@@ -7,7 +9,9 @@
  * Yazı tipleri ve simgeler: önce önbellek.
  * “Bizim listemiz” sunucusu başka adreste olduğu için service worker ona karışmaz; uygulama kendi kopyasını saklar.
  */
-const CACHE = 'gk-v5';   // v5: bizim.json kalktı (kişisel liste artık herkese açık değil)
+const SURUM = '__SURUM__';   // yayında scripts/surum.sh ile damgalanır; her yayın kendi önbelleğini kurar
+const CACHE = 'gk-' + SURUM;
+const EKLER = ['app.css', 'js/temel.js', 'js/cevrimdisi.js', 'js/kisisel.js', 'js/ekle.js', 'js/veri.js', 'js/liste.js', 'js/tepki.js', 'js/gorunum.js', 'js/baslat.js'].map(f => './' + f + '?v=' + SURUM);
 const SHELL = [
   './index.html',
   './data.json',
@@ -17,7 +21,7 @@ const SHELL = [
   './fonts/manrope-latin-ext.woff2',
   './icons/icon-192.png',
   './icons/apple-touch-icon.png'
-];
+].concat(EKLER);
 const PAGE_TIMEOUT = 1500;
 
 self.addEventListener('install', e => {
@@ -47,7 +51,12 @@ self.addEventListener('fetch', e => {
     e.respondWith(list(e, url, './' + m[1] + '.json'));
     return;
   }
-  e.respondWith(cacheFirst(req));
+  // sürümlü stil ve betikler: tam adresle (sürüm dahil) eşleşir; başka sürümün dosyası verilmez
+  if (url.searchParams.has('v') && /\/(app\.css|js\/[a-z]+\.js)$/.test(url.pathname)) {
+    e.respondWith(cacheFirst(req, false));
+    return;
+  }
+  e.respondWith(cacheFirst(req, true));
 });
 
 async function tell(msg) {
@@ -60,11 +69,8 @@ const imza = r => (r && (r.headers.get('etag') || r.headers.get('last-modified')
 // sayfa: önce ağ, kısa bekleme; gecikirse telefondaki kopya
 async function page(e, req) {
   const cache = await caches.open(CACHE);
-  const net = fetch(req).then(res => {
-    if (res.ok && !res.redirected) cache.put('./index.html', res.clone());
-    return res;
-  });
-  e.waitUntil(net.catch(() => {}));
+  const net = fetch(req);
+  e.waitUntil(net.then(res => (res.ok && !res.redirected ? sakla(cache, res.clone()) : null)).catch(() => {}));
   let timer;
   const timeout = new Promise(resolve => { timer = setTimeout(() => resolve(null), PAGE_TIMEOUT); });
   let res = null;
@@ -77,6 +83,19 @@ async function page(e, req) {
   if (res && res.ok) return res;
   const hit = await cache.match('./index.html');
   return hit || res || net;
+}
+
+// yeni sayfa, bağlı olduğu stil ve betikler önbellekte olmadan saklanmaz: çevrimdışı açılışta eksik ya da başka sürüm dosya kalmasın
+async function sakla(cache, res) {
+  const html = await res.clone().text();
+  const ekler = [...html.matchAll(/(?:href|src)="([^"]+\?v=[^"]+)"/g)].map(m => new URL(m[1], self.location.href).href);
+  await Promise.all(ekler.map(async u => {
+    if (await cache.match(u)) return;
+    const r = await fetch(u, {cache: 'no-cache'});
+    if (!r.ok) throw new Error(u);
+    await cache.put(u, r);
+  }));
+  await cache.put('./index.html', res);
 }
 
 // listeler: telefondaki kopya hemen, yenisi arka planda
@@ -97,9 +116,9 @@ async function list(e, url, key) {
   return hit;
 }
 
-async function cacheFirst(req) {
+async function cacheFirst(req, ignoreSearch) {
   const cache = await caches.open(CACHE);
-  const hit = await cache.match(req, {ignoreSearch: true});
+  const hit = await cache.match(req, {ignoreSearch});
   if (hit) return hit;
   const res = await fetch(req);
   if (res.ok) cache.put(req, res.clone());

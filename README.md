@@ -28,6 +28,7 @@ Derneklerde olmayan ama güvendiğiniz ürünleri uygulamadan ekleyebilirsiniz. 
 - **Kim:** her kişinin kendi ekleme şifresi vardır. Hangi adın yazılacağını şifre belirler; uygulamadan ad gönderilmez.
 - **Ne zaman:** tarih ve saat sunucunun saatidir.
 - **Düzeltme:** “Düzelt” ile yazım hatası ya da eksik bilgi tek adımda düzeltilir. Eski kayıt geçmişte “düzeltildi” olarak kalır; listede ilk ekleyen ve düzelten ayrı ayrı yazar.
+- **Yeniden kontrol:** elle eklenen ürün 6 aydır kontrol edilmediyse yanında sarı “paketi yeniden okuyun” uyarısı çıkar, Bizim listemiz kartının başında da kaç ürünün zamanı geldiği yazar. Paketi okuyup **Kontrol ettim**’e dokununca kimin, ne zaman kontrol ettiği kaydedilir (bu kayıt da değiştirilemez); düzeltilen üründe eski hâline yapılan kontrol de sayılır.
 - **Değiştirilemez kayıt:** satırlar silinmez. “Listeden çıkar” ürünü listeden kaldırır ama kaydı “Geçmiş” bölümünde, kimin ne zaman çıkardığıyla birlikte saklar. Veritabanındaki tetikleyiciler eklenme ve çıkarma kaydının sonradan düzenlenmesini engeller (`worker/schema.sql`).
 - **Nerede:** Cloudflare Workers + D1 (ücretsiz katman), kodu `worker/`. Okuma da yazma da şifre ister.
 - **Yedek:** haftalık kontrol kişisel kısmın tamamını (Bizim listemiz, tepkiler, dokunma kayıtları) **şifreleyerek** `yedek/kisisel.enc` dosyasına yazar; değişiklik yoksa dokunmaz. Dosya herkese açık depoda durur ama şifresiz okunamaz (scrypt + AES-256-GCM). Şifre mayildiz’in şifresidir (GitHub’daki `ANAHTAR_1`); şifre değişirse eski yedekleri açmak için eski şifre gerekir. Açmak için: `YEDEK_SIFRE='…' python3 scripts/yedek.py ac yedek/kisisel.enc > kisisel.json`
@@ -37,9 +38,9 @@ Derneklerde olmayan ama güvendiğiniz ürünleri uygulamadan ekleyebilirsiniz. 
 Herhangi bir ürün satırına (dernek listesi ya da Bizim listemiz) dokununca küçük bir pencere açılır. Her kişi kendi tepkisini verir; satırda baş harfle görünür (♥ M · 👎 H), pencerede tam adla.
 
 - **Beğendim / Beğenmedim / Favori:** beğendim ile beğenmedim birbirini dışlar; favori beğeni sayılır. Beğenmeme nedenine kısa bir not yazılabilir.
-- **Bize dokundu (günlük):** listede olsa bile rahatsızlık yapan ürün için her olay ayrı kaydedilir: ne zaman, kim, ne oldu, parti/seri no. Pencerede geçmiş listelenir (en yenisi üstte), herkes kendi kaydını silebilir. Ürünün satırında (“Dokundu 2 kez · …”) ve markanın kartında kırmızı uyarı olarak ikinizde de görünür.
+- **Bize dokundu (günlük):** listede olsa bile rahatsızlık yapan ürün için her olay ayrı kaydedilir: ne zaman, kim, ne oldu, **olası neden** (çapraz bulaşma şüphesi · gluten dışı bir şey ağır geldi: laktoz, gam, lif · aynı gün başka şüpheli bir şey yendi · bilmiyorum) ve **paket bilgisi** (parti no, son kullanma tarihi, üretici; market markalarını farklı fason firmalar üretebilir). Pencerede geçmiş listelenir (en yenisi üstte), herkes kendi kaydını silebilir. Ürünün satırında (“Dokundu 2 kez · …”) ve markanın kartında kırmızı uyarı olarak ikinizde de görünür.
 - **Tat güvenlik değildir:** tepkiler yeşil/sarı/kırmızı kararı hiçbir zaman değiştirmez.
-- **Ana sayfa:** “Tepkilerimiz” altında Dokunan, Favori, Beğenilen ve Beğenilmeyen ürünler kimin ne dediğiyle listelenir. İki listedeki aynı ürüne verilen tepkiler tek satırda birleşir. Dernek listelerinden düşen bir ürün “Dernek listelerinde artık bu satır yok” uyarısıyla işaretlenir.
+- **Ana sayfa:** “Tepkilerimiz” altında Dokunan, İkimiz de (ikinizin de beğendikleri, ortak alınacaklar için), Favori, Beğenilen ve Beğenilmeyen ürünler kimin ne dediğiyle listelenir. İki listedeki aynı ürüne verilen tepkiler tek satırda birleşir. Dernek listelerinden düşen bir ürün “Dernek listelerinde artık bu satır yok” uyarısıyla işaretlenir.
 - **Kalıcı ürün numarası:** haftalık derleme her dernek satırına bir numara verir (`data.json` içinde `u`). Satırın yazımı değişirse (ör. gramaj eklenirse) numara korunur; tepkiler ve kayıtlar bu numaraya bağlıdır. Emin olunamayan değişikliklerde yeni numara verilir; numaralar hiç yeniden kullanılmaz (`scripts/pipeline.py` → `assign_uids`).
 
 ### Bir kerelik kurulum
@@ -69,9 +70,16 @@ Her pazartesi 10:33’te (Türkiye saati) GitHub Actions şunları yapar:
 2. `scripts/update.py` + `scripts/pipeline.py`: satırları ayrıştırır, ürün düzeyinde eşleştirir, önceki listeyle karşılaştırır.
 3. `scripts/apply.sh`: değişiklik varsa `site/data.json` dosyasını günceller, sayfayı yeniden yayınlar ve **degisiklik** etiketli bir issue açar. GitHub bunu e-postayla bildirir.
 
-Bir kaynak alınamazsa ya da veri şüpheli görünürse sayfa olduğu gibi kalır ve issue açılır. “Son kontrol” tarihi yalnızca bütün kaynaklar alındığında ilerler.
+Bir kaynak alınamazsa ya da veri şüpheli görünürse sayfa olduğu gibi kalır ve issue açılır. “Son kontrol” tarihi yalnızca bütün kaynaklar alındığında ilerler. Telefondaki liste 2 haftadan eskiyse (uzun süre internetsiz kalındıysa ya da kontrol yapılamadıysa) başlıktaki tarih sarı görünür ve kaç gün olduğu yazar.
 
 Elle çalıştırmak için: **Actions → Haftalık liste kontrolü → Run workflow**.
+
+## Kod düzeni
+
+- **Sayfa (`site/`):** `index.html` iskelet ve ilk açılışta görünen bölümler, `app.css` görünüm, `js/` altında konularına göre betikler. Betikler ortak bir kapsamda şu sırayla çalışır: `temel` (yardımcılar, durum) → `cevrimdisi` → `kisisel` (giriş, Bizim listemiz) → `ekle` (ekleme/düzeltme formu) → `veri` → `liste` (arama, marka kartları) → `tepki` → `gorunum` → `baslat`. Derleme adımı yoktur.
+- **Sürüm damgası:** yayında `scripts/surum.sh` stil ve betik adreslerine sürüm ekler (`app.css?v=…`); `sw.js` her sürümün dosyalarını kendi önbelleğinde birlikte tutar, böylece telefonda eski ve yeni sürüm karışmaz.
+- **Liste derleyici:** `scripts/pipeline.py` giriş noktasıdır; kod `scripts/derle/` paketindedir ve her katman yalnızca kendinden öncekileri kullanır: `metin` → `kategoriler` → `markalar` → `ortak` → `ayristir` (dernek sayfaları) → `zenginlestir` → `esles` (iki listeyi eşleştirme) → `cikti` (data.json, kalıcı numaralar).
+- **Sunucu (`worker/`):** `src/index.js`, veritabanı şeması `schema.sql`, var olan veritabanı için sırayla uygulanan `migrations/`.
 
 ## Testler
 

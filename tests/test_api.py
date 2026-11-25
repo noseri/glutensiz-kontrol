@@ -81,7 +81,6 @@ check('geçmiş tarihle dokunma', s == 201 and d2['tarih'] == (bugun - timedelta
 for ad, t in [('ileri tarih', (bugun + timedelta(days=2)).isoformat()), ('olmayan gün', '2026-02-30'), ('biçim', '26.11.2026'), ('çok eski', '1999-12-31')]:
     s, j, h, _ = api('POST', '/dokunma', dict(B, tarih=t), A); check('dokunma: ' + ad + ' → 400', s == 400, (s, j))
 s, j, h, _ = api('POST', '/dokunma', dict(B, notu='x' * 201), A); check('dokunma notu uzun → 400', s == 400, (s, j))
-s, j, h, _ = api('POST', '/dokunma', dict(B, parti='x' * 41), A); check('parti no uzun → 400', s == 400, (s, j))
 s, j, h, _ = api('POST', '/dokunma', dict(B)); check('şifresiz dokunma → 401', s == 401, (s, j))
 s, j, h, _ = api('GET', '/veri', key=A)
 check('veride dokunmalar yeniden eskiye', [d['id'] for d in j['dokunmalar']] == [d1['id'], d2['id']], j['dokunmalar'])
@@ -90,6 +89,24 @@ s, j, h, _ = api('POST', '/dokunma-sil', {'id': 999}, A); check('olmayan kayıt 
 s, j, h, _ = api('POST', '/dokunma-sil', {'id': 'abc'}, A); check('geçersiz id → 400', s == 400, (s, j))
 s, j, h, _ = api('POST', '/dokunma-sil', {'id': d1['id']}, H); check('kendi kaydını silme → 200', s == 200 and j['silindi'] == d1['id'], (s, j))
 s, j, h, _ = api('GET', '/veri', key=H); check('silinen kayıt yok, diğeri duruyor', [d['id'] for d in j['dokunmalar']] == [d2['id']], j['dokunmalar'])
+
+# --- dokunmanın olası nedeni ve paket bilgisi
+s, j, h, _ = api('POST', '/dokunma', dict(B, neden='bulasma', parti='L2611 · SKT 03.2027 · Üretici: Örnek Gıda A.Ş.'), H)
+check('olası neden ve uzun paket bilgisi kaydedilir', s == 201 and j['dokunma']['neden'] == 'bulasma' and j['dokunma']['parti'].startswith('L2611 · SKT'), (s, j))
+s, j, h, _ = api('POST', '/dokunma', dict(B, neden='uydurma'), H); check('geçersiz neden → 400', s == 400, (s, j))
+s, j, h, _ = api('POST', '/dokunma', dict(B, parti='x' * 81), H); check('paket bilgisi 80 karakteri aşarsa → 400', s == 400, (s, j))
+s, j, h, _ = api('POST', '/dokunma', dict(B), H); check('neden boş bırakılabilir', s == 201 and j['dokunma']['neden'] is None, (s, j))
+
+# --- Bizim listemiz: "kontrol ettim"
+s, j, h, _ = api('GET', '/veri', key=A); aktif = j['urunler'][0]['id']; kapali = j['cikarilanlar'][0]['id']
+s, j, h, _ = api('POST', '/kontrol', {'id': aktif}, H)
+check('kontrol ettim → 201, kim ve ne zaman sunucudan', s == 201 and j['kontrol']['urun'] == aktif and j['kontrol']['kisi'] == 'heyybenbus' and j['kontrol']['zaman'].endswith('Z'), (s, j))
+s, j, h, _ = api('POST', '/kontrol', {'id': kapali}, A); check('listeden çıkmış ürün kontrol edilemez → 404', s == 404, (s, j))
+s, j, h, _ = api('POST', '/kontrol', {'id': 'abc'}, A); check('geçersiz id → 400', s == 400, (s, j))
+s, j, h, _ = api('POST', '/kontrol', {'id': aktif}); check('şifresiz kontrol → 401', s == 401, (s, j))
+s, j, h, _ = api('POST', '/kontrol', {'id': aktif}, A)
+s, j, h, _ = api('GET', '/veri', key=A)
+check('veride kontroller yeniden eskiye, iki kişi ayrı', [(k['urun'], k['kisi']) for k in j['kontroller']] == [(aktif, 'mayildiz'), (aktif, 'heyybenbus')], j.get('kontroller'))
 
 # --- CORS
 s, j, h, _ = api('OPTIONS', '/veri', origin=KOKEN)

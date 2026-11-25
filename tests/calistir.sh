@@ -26,11 +26,12 @@ trap temizle EXIT
 pkill -f "http.server 876[5-7]" 2>/dev/null; pkill -f "wrangler.*dev.*--port 8787" 2>/dev/null; pkill -f workerd 2>/dev/null; sleep 1
 
 # site kopyaları: 8765 test verisiyle, 8766 service worker testi için ayrı kopya, 8767 gerçek liste (duman testi)
-mkdir -p "$T/site" "$T/site_sw" "$T/site_gercek"
+mkdir -p "$T/site" "$T/site_sw" "$T/site_sw_ham" "$T/site_gercek"
 cp -r "$KOK/site/." "$T/site_gercek/"
 cp -r "$KOK/site/." "$T/site/"; cp "$KOK/tests/veri/data.json" "$T/site/data.json"
-cp -r "$T/site/." "$T/site_sw/"
-export GK_SW_KOPYA="$T/site_sw" GK_SW_VERI="$KOK/tests/veri/data.json"
+cp -r "$T/site/." "$T/site_sw_ham/"                       # damgasız kopya: sürüm güncellemesini denemek için
+cp -r "$T/site/." "$T/site_sw/"; bash "$KOK/scripts/surum.sh" "$T/site_sw" test1 > /dev/null   # yayındaki gibi damgalı
+export GK_SW_KOPYA="$T/site_sw" GK_SW_HAM="$T/site_sw_ham" GK_SW_VERI="$KOK/tests/veri/data.json"
 SPIDS=()
 for x in "8765 site" "8766 site_sw" "8767 site_gercek"; do
   port=${x% *}; dizin=${x#* }
@@ -69,6 +70,7 @@ calistir test_ux.py sunucu tohum
 calistir test_kat.py sunucu tohum
 calistir test_duzelt.py sunucu tohum
 calistir test_tepki.py sunucu tohum
+calistir test_kontrol.py sunucu tohum
 calistir test_sw.py
 calistir duman.py
 

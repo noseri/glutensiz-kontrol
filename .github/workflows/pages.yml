@@ -26,6 +26,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main          # haftalık kontrolün az önce kaydettiği son sürüm
+      - name: Sürüm damgası (stil, betik ve çevrimdışı önbellek bu yayına özgü olsun)
+        run: bash scripts/surum.sh site "$(git rev-parse --short HEAD)"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
