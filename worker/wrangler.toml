@@ -1,6 +1,8 @@
 # Glutensiz Kontrol — "Bizim listemiz" sunucusu
 # Yayın: .github/workflows/worker.yml (GitHub'daki CLOUDFLARE_API_TOKEN ile).
 name = "glutensiz-liste"
+# Noserinin Hesabı (hesap kimliği gizli değildir; hesaba ait jetonla yayın için gerekli)
+account_id = "d51f8b8bde254d66f5b0de9c6ae4352f"
 main = "src/index.js"
 compatibility_date = "2025-09-01"
 workers_dev = true

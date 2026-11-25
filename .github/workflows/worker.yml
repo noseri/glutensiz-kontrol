@@ -49,8 +49,9 @@ jobs:
           npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/wr" wrangler@4 > /dev/null
           echo "$RUNNER_TEMP/wr/node_modules/.bin" >> "$GITHUB_PATH"
 
-      - name: Hesap
+      - name: Hesap (bilgi)
         if: steps.k.outputs.var == '1'
+        continue-on-error: true   # hesaba ait jetonlar kullanıcı bilgisini okuyamaz; yayın için gerekmez
         working-directory: worker
         run: wrangler whoami
 
