@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glutensiz Kontrol</title>
+<meta name="description" content="İstanbul ve Ankara çölyak derneklerinin glutensiz onay listeleri, tek aramada.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1113" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Glutensiz">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:Manrope;font-style:normal;font-display:swap;font-weight:200 800;src:url(fonts/manrope-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:Manrope;font-style:normal;font-display:swap;font-weight:200 800;src:url(fonts/manrope-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+/*
+VOICE: sakin, kesin, eczane etiketi kadar net; süs yok, karar hızlı.
+IDEA: market rafındaki fiyat etiketi — her ürünün yanında tek bakışta okunan küçük bir onay etiketi.
+PICTURE: aramanın kendisi; sonuç kartlarındaki yeşil/sarı/kırmızı karar şeridi.
+COLOUR and TYPE: beyaz zemin, mürekkep siyahı; renk yalnızca karar için (yeşil, kehribar, kırmızı). Manrope.
+LAYOUT: tek sütun, üstte yapışkan arama; telefonda başparmakla kullanılacak geniş hedefler.
+*/
+:root{color-scheme:light dark;
+  --bg:light-dark(#ffffff,#0f1113);--ink:light-dark(#121417,#eef0f2);--mut:light-dark(#5d6670,#9aa3ad);
+  --line:light-dark(#e8eaed,#262a2f);--soft:light-dark(#f6f7f8,#171a1d);--card:light-dark(#ffffff,#14171a);
+  --ok:light-dark(#0b7a42,#4fd18f);--okbg:light-dark(#e9f6ef,#11281d);
+  --one:light-dark(#9a5800,#f1b75a);--onebg:light-dark(#fdf4e4,#2a2112);
+  --part:light-dark(#8a6a00,#e3c766);--partbg:light-dark(#fbf7e6,#26230f);
+  --no:light-dark(#b42318,#ff8a80);--nobg:light-dark(#fdeceb,#2c1513);
+  --rd:light-dark(#475467,#b8c0cc);--rdbg:light-dark(#f2f4f7,#1c2026);
+  --focus:light-dark(#121417,#eef0f2)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:120px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 max(4vw,16px)}
+header.top{padding:22px 0 6px}
+.brandline{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:clamp(26px,5.4vw,34px);line-height:1.05;letter-spacing:-.02em;margin:0;font-weight:800;text-wrap:balance}
+.sub{color:var(--mut);font-size:14px;margin:6px 0 0}
+.upd{font-size:13px;color:var(--mut);white-space:nowrap}.upd.off{color:var(--one);font-weight:600}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 10px;border-bottom:1px solid transparent}
+.bar.stuck{border-bottom-color:var(--line)}
+.search{position:relative}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--mut);pointer-events:none}
+#q{width:100%;height:56px;border:1.5px solid var(--ink);border-radius:16px;padding:0 52px 0 48px;font:600 17px/1 Manrope,system-ui,sans-serif;background:var(--card);color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
+#q::placeholder{color:var(--mut);font-weight:500}
+#q::-webkit-search-cancel-button,#q::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+body.searching .sub{display:none}body.searching header.top{padding-bottom:0}
+.xc{font-size:12px;color:var(--mut);margin:2px 0 0}
+#q:focus-visible{box-shadow:0 0 0 3px light-dark(#12141722,#eef0f233)}
+#clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:none;border-radius:12px;display:none;cursor:pointer;color:var(--mut)}
+#clear.on{display:grid;place-items:center}
+.tabs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:600;cursor:pointer;color:var(--mut)}
+.tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+main{padding:8px 0 60px}
+.sec{margin:22px 0 10px;font-size:13px;font-weight:700;color:var(--mut);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sec b{color:var(--ink)}
+/* karar kartı */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:12px 0;overflow:hidden}
+.verdict{display:flex;gap:14px;align-items:flex-start;padding:16px 16px 14px}
+.dot{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.dot svg{width:22px;height:22px}
+.v-ok .dot{background:var(--okbg);color:var(--ok)}.v-one .dot{background:var(--onebg);color:var(--one)}
+.v-part .dot{background:var(--partbg);color:var(--part)}.v-no .dot{background:var(--nobg);color:var(--no)}
+.v-rd .dot{background:var(--rdbg);color:var(--rd)}
+.vt{font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.2;margin:0}
+.vs{margin:3px 0 0;font-size:14px;color:var(--mut)}
+.vs strong{color:var(--ink);font-weight:700}
+.v-ok .vs .k{color:var(--ok)}.v-one .vs .k{color:var(--one)}.v-no .vs .k{color:var(--no)}
+.cats{border-top:1px solid var(--line)}
+.crow{padding:12px 16px 14px;border-top:1px solid var(--line)}
+.crow:first-child{border-top:0}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.cname{font-weight:700;font-size:15px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.chip svg{width:14px;height:14px}
+.c-ok{background:var(--okbg);color:var(--ok)}.c-one{background:var(--onebg);color:var(--one)}
+.c-part{background:var(--partbg);color:var(--part)}.c-no{background:var(--nobg);color:var(--no)}.c-rd{background:var(--rdbg);color:var(--rd)}
+ul.ls{list-style:none;margin:0;padding:0}
+.li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:7px 0}
+.src{font-size:11px;font-weight:800;letter-spacing:.04em;border:1px solid var(--line);border-radius:6px;padding:2px 6px;margin-top:2px;color:var(--mut);background:var(--soft)}
+.tx{font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.tx mark{background:none;color:inherit;font-weight:800}
+.tx .neg{color:var(--no);font-weight:700}
+.sart{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--onebg);color:var(--one);font-size:11.5px;font-weight:700;letter-spacing:.01em;vertical-align:2px}
+.tx .cond{text-decoration:underline;text-decoration-color:var(--one);text-decoration-thickness:2px;text-underline-offset:3px}
+.mk{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;margin-top:1px}
+.mk svg{width:16px;height:16px}
+.m-ok{background:var(--okbg);color:var(--ok)}.m-one{background:var(--onebg);color:var(--one)}.m-part{background:var(--partbg);color:var(--part)}
+.m-no{background:var(--nobg);color:var(--no)}.m-rd{background:var(--rdbg);color:var(--rd)}
+.hd{font-size:12px;color:var(--mut);margin-top:1px}
+.note{margin-top:8px;padding:9px 11px;border-radius:10px;background:var(--soft);font-size:13.5px;color:var(--ink)}
+.note .src{margin-right:6px}
+.note.af{background:var(--okbg)}
+.more{display:block;width:100%;border:0;border-top:1px solid var(--line);background:none;padding:12px 16px;text-align:left;font-weight:700;font-size:14px;cursor:pointer;min-height:44px}
+/* kategori listesi */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:8px}
+.cat{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;min-height:44px}
+.cat:hover{border-color:var(--mut)}
+.cat .n{font-weight:700;font-size:15px}
+.meter{display:flex;height:6px;border-radius:999px;overflow:hidden;background:var(--soft)}
+.meter i{display:block;height:100%}
+.meter .a{background:var(--ok)}.meter .b{background:var(--one);opacity:.75}.meter .c{background:var(--one);opacity:.4}
+.cat .s{font-size:12.5px;color:var(--mut)}
+.brow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;border-top:1px solid var(--line);background:none;padding:12px 16px;text-align:left;cursor:pointer;min-height:48px}
+.brow:first-child{border-top:0}
+.brow .bn{font-weight:700}
+.brow .pv{font-size:13px;color:var(--mut);display:block;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .lft{min-width:0;flex:1}
+.bdet{padding:2px 16px 12px;border-top:1px dashed var(--line)}
+.legend{display:grid;gap:8px;margin:14px 0 4px}
+.lg{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.lg .dot{width:34px;height:34px;border-radius:10px}
+.lg b{display:block;font-size:15px}
+.lg span{font-size:13.5px;color:var(--mut)}
+.empty{padding:18px 16px;color:var(--mut);font-size:15px}
+.sugg{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 16px}
+.sg{border:1px solid var(--line);background:var(--card);border-radius:999px;height:36px;padding:0 14px;font-weight:700;font-size:14px;cursor:pointer}
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;font-weight:700;font-size:14px;padding:8px 0;cursor:pointer;min-height:44px;color:var(--mut)}
+.back svg{width:18px;height:18px}
+h2{font-size:24px;line-height:1.1;margin:6px 0 4px;letter-spacing:-.01em}
+.small{font-size:13px;color:var(--mut)}
+details.fold{border:1px solid var(--line);border-radius:14px;background:var(--card);margin:10px 0}
+details.fold summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style:none;min-height:44px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::after{content:"+";float:right;color:var(--mut);font-weight:800}
+details.fold[open] summary::after{content:"–"}
+.fbody{padding:0 16px 14px;font-size:14.5px}
+.fbody p{margin:.5em 0}
+.src-l{display:grid;gap:8px}
+.src-l a{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;text-decoration:none;font-size:14px}
+.src-l a span:last-child{color:var(--mut);white-space:nowrap}
+.venue{padding:10px 0;border-top:1px solid var(--line)}
+.venue:first-child{border-top:0}
+.venue b{display:block;font-size:14.5px}
+.venue span{font-size:13.5px;color:var(--mut)}
+.chg{font-size:14px}
+.chg li{margin:3px 0}
+.loading{padding:40px 0;color:var(--mut);text-align:center}
+.foot{margin-top:28px;font-size:12.5px;color:var(--mut);line-height:1.55}
+.kbd{font-weight:700;color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
+@media(max-width:600px){.vt{font-size:18px}.tx{font-size:15px}h2{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brandline">
+      <h1>Glutensiz Kontrol</h1>
+      <span class="upd" id="upd"></span>
+    </div>
+    <p class="sub">İstanbul ve Ankara çölyak derneklerinin onay listeleri, tek aramada.</p>
+  </header>
+</div>
+<div class="bar" id="bar">
+  <div class="wrap">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" inputmode="search" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="Marka veya ürün ara: Pınar, makarna, Parol…" aria-label="Marka veya ürün ara">
+      <button id="clear" aria-label="Aramayı temizle"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="tabs" role="group" aria-label="Liste türü" id="tabs"></div>
+  </div>
+</div>
+<div class="wrap"><main id="out"><div class="loading">Listeler yükleniyor…</div></main></div>
+
+<script>
+{
+const $ = s => document.querySelector(s);
+const out = $('#out'), qi = $('#q'), clearB = $('#clear');
+const ICON = {
+  ok2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5l4 4L13 9"/><path d="M10.5 15.5l1 1L21.5 7"/></svg>',
+  ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  half: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  no: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>'
+};
+const DOMAINS = [['gida','Gıda'],['ilac','İlaç'],['kozmetik','Bakım & kozmetik'],['takviye','Takviye']];
+const SRC = {ist:'İST', ank:'ANK'};
+const SRCN = {ist:'İstanbul', ank:'Ankara'};
+const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+let D, CAT = {}, BN = {}, LBY = {}, GRP = {}, GBY = {}, CATL = {}, BNORM = {}, LN = [], PB = new Set();
+const st = {q:'', dom:'gida', view:'home', cat:null, open:new Set()};
+try { const s = localStorage.getItem('gk-dom'); if (s) st.dom = s; } catch (e) {}
+
+function esc(s){return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function norm(s){
+  s = String(s || '').normalize('NFC').replace(/[​‍﻿]/g, '').replace(/ /g, ' ');
+  s = s.replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+  s = s.replace(/[’'`´‘ʼ](nın|nin|nun|nün|ın|in|un|ün|ı|i|u|ü|a|e|da|de|ta|te|dan|den|tan|ten|yla|yle|la|le)(?![a-zçğıöşü])/g, '');
+  s = s.replace(/[’'`´‘ʼ]/g, '');
+  s = s.replace(/[çğıöşüâîû]/g, c => ({'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u','â':'a','î':'i','û':'u'}[c]));
+  s = s.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+  s = s.replace(/&/g, ' & ').replace(/[^a-z0-9%&+]+/g, ' ').replace(/\s+/g, ' ').trim();
+  s = s.replace(/\b(?:[a-z0-9] ){2,}[a-z0-9]\b/g, m => m.replace(/ /g, ''));
+  return s;
+}
+function fmtDate(iso){ if(!iso) return ''; const [y,m,d] = iso.slice(0,10).split('-').map(Number); return d + ' ' + MONTHS[m-1] + ' ' + y; }
+function lev(a, b){
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  const m = a.length, n = b.length; let prev = Array.from({length:n+1}, (_, j) => j);
+  for (let i = 1; i <= m; i++){ const cur = [i]; for (let j = 1; j <= n; j++){ cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1)); } prev = cur; }
+  return prev[n];
+}
+
+// ---- satır işaretleri
+const NEG = /(gluten\s+i̇?[çc]er(ir|iyor|mektedir|ebilir|di[gğ]i)|glutenli|alma(y[ıi]n[ıi]z|mal[ıi]y[ıi]z)|kullanma(y[ıi]n[ıi]z|mal[ıi]y[ıi]z)|kullan[ıi]lmamal[ıi]d[ıi]r|kullan[ıi]lmamal[ıi]|t[üu]ketilmemeli(dir)?|t[üu]ketmeyiniz|yememeliyiz|yasak(t[ıi]r)?)/gi;
+const COND = /(hari[çc]|d[ıi][şs][ıi]nda(ki)?|olmayanlar|etiket(ini|leri|i|ine)?\s+(okuy\w*|dikkat\w*)|[üu]zeri(ni)?\s+okuy\w*|okuyarak|sadece\s+[^,.;)]{1,40}|glutensiz\s+(yazan|ibareli\w*|yaz[ıi]l[ıi]|etiketi\s+olan|etiketli)|glutensiz\s+yazmal[ıi])/gi;
+const CONDT = new RegExp(COND.source, 'i');
+function decorate(text, toks){
+  let h = esc(text);
+  h = h.replace(NEG, m => '<span class="neg">' + m + '</span>');
+  h = h.replace(COND, m => /class=/.test(m) ? m : '<span class="cond">' + m + '</span>');
+  return h;
+}
+function lineMark(l){
+  if (l.k === 'warn') return ['m-no', ICON.warn, 'Gluten uyarısı — almayın'];
+  if (l.k === 'read') return ['m-rd', ICON.eye, 'Onay değil: etiketi okunarak alınacak'];
+  if (l.k === 'info') return ['m-rd', ICON.eye, 'Bilgi'];
+  if (l.st === 'both') return ['m-ok', ICON.ok2, 'Diğer listede de var'];
+  if (l.st === 'part' && l.g && (PB.has(l.i) || (LBY[l.b] || []).some(o => o.c === l.c && o.s !== l.s && o.k === 'ok'))) return ['m-part', ICON.half, 'Bu liste markanın tümünü sayıyor; diğer liste yalnızca belirli ürünleri'];
+  if (l.st === 'part') return ['m-part', ICON.half, 'Marka diğer listede var, bu ürün yok'];
+  return ['m-one', ICON.ok, 'Yalnızca bu listede'];
+}
+const KO = {ok:0, info:1, read:2, warn:3}, SO = {both:0, part:1, one:2, mixed:2};
+function lineOrder(a, b){
+  return (KO[a.k] ?? 1) - (KO[b.k] ?? 1) || (SO[a.st] ?? 2) - (SO[b.st] ?? 2) || (a.s === b.s ? a.i - b.i : (a.s === 'ist' ? -1 : 1));
+}
+function lineRow(l, toks){
+  const [cls, ic, tip] = lineMark(l);
+  const h = D.heads[l.h];
+  return '<li class="li"><span class="src" title="' + SRCN[l.s] + ' listesi">' + SRC[l.s] + '</span>' +
+    '<div><div class="tx">' + decorate(l.t, toks) + '</div>' + (h ? '<div class="hd">' + SRCN[l.s] + ' · ' + esc(h) + '</div>' : '') + '</div>' +
+    '<span class="mk ' + cls + '" title="' + tip + '" aria-label="' + tip + '">' + ic + '</span></li>';
+}
+const GST = {
+  both: ['c-ok', ICON.ok2, 'İki listede de'],
+  part: ['c-part', ICON.half, 'Marka iki listede, ürünler farklı'],
+  ist: ['c-one', ICON.ok, 'Sadece İstanbul'],
+  ank: ['c-one', ICON.ok, 'Sadece Ankara'],
+  read: ['c-rd', ICON.eye, 'Etiketi okunarak'],
+  warn: ['c-no', ICON.warn, 'Uyarı']
+};
+function chip(s){ const g = GST[s] || GST.ist; return '<span class="chip ' + g[0] + '">' + g[1] + g[2] + '</span>'; }
+function groupStatus(b, c){
+  const g = GBY[b + '|' + c];
+  const ls = (LBY[b] || []).filter(l => l.c === c);
+  if (ls.length && ls.every(l => l.k === 'warn')) return 'warn';
+  if (ls.length && ls.every(l => l.k === 'read' || l.k === 'warn' || l.k === 'info')) return 'read';
+  return g ? g.st : (ls.some(l => l.s === 'ist') ? (ls.some(l => l.s === 'ank') ? 'part' : 'ist') : 'ank');
+}
+
+// ---- çevrimdışı kullanım
+let FROM_CACHE = false;
+function showUpd(){
+  if (!D) return;
+  const g = fmtDate(D.checked || D.generated);
+  const off = FROM_CACHE || !navigator.onLine;
+  const el = $('#upd');
+  el.textContent = (g ? 'Son kontrol: ' + g : '') + (off ? ' · çevrimdışı' : '');
+  el.title = off ? 'İnternet yok: telefona kaydedilmiş son liste gösteriliyor.' : '';
+  el.classList.toggle('off', off);
+}
+addEventListener('online', () => { FROM_CACHE = false; showUpd(); });
+addEventListener('offline', showUpd);
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).catch(() => {}));
+}
+const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+// ---- veri
+async function load(){
+  try {
+    const r = await fetch('data.json', {cache:'no-cache'});
+    FROM_CACHE = r.headers.get('x-gk-offline') === '1';
+    D = await r.json();
+  } catch (e) {
+    out.innerHTML = '<div class="card"><div class="empty">Liste verisi yüklenemedi. Sayfayı yenileyin.</div></div>';
+    return;
+  }
+  D.cats.forEach(c => { CAT[c.id] = c; c.nn = norm(c.n); });
+  BN = D.brands;
+  for (const k in BN) BNORM[k] = norm(BN[k]);
+  LN = D.lines;
+  LN.forEach(l => { if (l.st === 'both') (l.p || []).forEach(pid => PB.add(pid)); });
+  LN.forEach(l => {
+    l.d = (CAT[l.c] || {}).d || 'gida';
+    l.nn = norm(l.t);
+    l.hn = norm(D.heads[l.h] || '');
+    if (l.b) (LBY[l.b] = LBY[l.b] || []).push(l);
+    (CATL[l.c] = CATL[l.c] || []).push(l);
+  });
+  D.groups.forEach(g => { GBY[g.b + '|' + g.c] = g; (GRP[g.b] = GRP[g.b] || []).push(g); });
+  showUpd();
+  drawTabs();
+  route();
+}
+
+// ---- arama
+function tokMatch(qt, words){ return words.some(w => w.startsWith(qt)); }
+function search(q){
+  const qn = norm(q); if (!qn) return null;
+  const qt = qn.split(' ');
+  const qc = qn.replace(/ /g, '');
+  const res = new Map(); // brand -> lines
+  const loose = [];      // markasız eşleşen notlar
+  for (const l of LN){
+    if (l.d !== st.dom) continue;
+    const bwords = l.b ? (BNORM[l.b] || '').split(' ').concat([l.b]) : [];
+    const words = l.nn.split(' ').concat(bwords, (CAT[l.c] || {}).nn ? CAT[l.c].nn.split(' ') : [], l.hn ? l.hn.split(' ') : []);
+    const ok = qt.every(t => tokMatch(t, words)) || (qc.length >= 4 && l.b && (l.b.startsWith(qc) || (BNORM[l.b] || '').replace(/ /g, '').startsWith(qc)));
+    if (!ok) continue;
+    if (!l.b || l.k === 'note') { loose.push(l); continue; }
+    if (!res.has(l.b)) res.set(l.b, []);
+    res.get(l.b).push(l);
+  }
+  // marka adı eşleşme gücüne göre sırala
+  const score = b => {
+    const n = BNORM[b] || b, nc = n.replace(/ /g, '');
+    if (n === qn || nc === qc || b === qc) return 0;
+    if (n.startsWith(qn) || nc.startsWith(qc)) return 1;
+    if (n.split(' ').some(w => qt.some(t => w.startsWith(t)))) return 2;
+    return 3;
+  };
+  const brands = [...res.keys()].sort((a, b) => score(a) - score(b) || res.get(b).length - res.get(a).length || (BN[a] || a).localeCompare(BN[b] || b, 'tr'));
+  const cats = D.cats.filter(c => c.d === st.dom && qt.every(t => c.nn.split(' ').some(w => w.startsWith(t))) && (CATL[c.id] || []).length);
+  return {qn, qt, brands, res, loose, cats, score};
+}
+function suggestions(qn){
+  const qc = qn.replace(/ /g, ''); if (qc.length < 3) return [];
+  const seen = new Set(), outS = [];
+  for (const b in BNORM){
+    if (!(LBY[b] || []).some(l => l.d === st.dom)) continue;
+    const n = BNORM[b].replace(/ /g, '');
+    const lim = qc.length >= 7 ? 2 : 1;
+    const d = Math.min(lev(qc, n), lev(qc, n.slice(0, qc.length)) + (n.length > qc.length ? 0 : 9));
+    if (d <= lim && !seen.has(BN[b])) { seen.add(BN[b]); outS.push([d, BN[b]]); }
+  }
+  return outS.sort((a, b) => a[0] - b[0]).slice(0, 6).map(x => x[1]);
+}
+function verdictFor(sts){
+  if (sts.includes('both')) return 'ok';
+  if (sts.includes('part')) return 'part';
+  if (sts.includes('ist') || sts.includes('ank')) return 'one';
+  if (sts.includes('read')) return 'rd';
+  return 'no';
+}
+function brandCard(b, lines, toks, full){
+  const byC = new Map();
+  lines.forEach(l => { if (!byC.has(l.c)) byC.set(l.c, []); byC.get(l.c).push(l); });
+  const order = {both:0, part:1, ist:2, ank:2, read:3, warn:4};
+  const isCond = l => l.k === 'ok' && (l.w || CONDT.test(l.t));
+  const condC = new Set(lines.filter(isCond).map(l => l.c));
+  const cs = [...byC.keys()].map(c => [c, groupStatus(b, c)]).sort((x, y) => order[x[1]] - order[y[1]] || condC.has(y[0]) - condC.has(x[0]) || CAT[x[0]].n.localeCompare(CAT[y[0]].n, 'tr'));
+  const sts = cs.map(x => x[1]);
+  const v = verdictFor(sts);
+  const nb = sts.filter(s => s === 'both').length, n1 = sts.filter(s => s === 'ist' || s === 'ank' || s === 'part').length;
+  const hasWarn = lines.some(l => l.k === 'warn');
+  const hasOk = lines.some(l => l.k === 'ok');
+  const sartli = condC.size > 0;
+  let title, sub;
+  if (hasWarn && !hasOk){
+    const ic2 = ICON.warn;
+    return brandCardShell(b, 'no', ic2, 'Gluten uyarısı var', 'Listelerde bu marka için uyarı satırı bulunuyor; satırları okuyun.', cs, byC, toks, full);
+  }
+  if (v === 'ok'){ title = 'İki listede de var'; sub = nb + ' kategoride <strong>iki listede</strong>' + (n1 ? ', ' + n1 + ' kategoride tek listede' : '') + (sartli ? '<br>Şart var (' + [...condC].map(c => esc(CAT[c].n)).slice(0, 3).join(', ') + '): altı çizili ifadeleri okuyun.' : ''); }
+  else if (v === 'part'){ title = 'Marka iki listede, bu ürünler tek listede'; sub = 'Ürünü kontrol edin: aşağıda iki listenin metni yan yana.'; }
+  else if (v === 'one'){ const only = sts.includes('ist') && !sts.includes('ank') ? 'İstanbul' : (sts.includes('ank') && !sts.includes('ist') ? 'Ankara' : 'tek'); title = 'Yalnızca ' + (only === 'tek' ? 'tek listede' : only + ' listesinde'); sub = '<span class="k">Paketi inceleyerek</span> alın.'; }
+  else if (v === 'rd'){ title = 'Onay listesinde değil — etiketi okunacak firmalar arasında'; sub = 'Dernekler bu firmanın ürünlerini ambalaj okunarak almayı öneriyor.'; }
+  else { title = 'Uyarı'; sub = 'Aşağıdaki ürün(ler) için gluten uyarısı var.'; }
+  if (v === 'one' && st.dom === 'ilac') sub = 'Diğer listede adı geçmiyor. Kutudaki <strong>üretici firmayı</strong> aşağıdaki listeyle karşılaştırın.';
+  const ic = {ok:ICON.ok2, part:ICON.half, one:ICON.ok, rd:ICON.eye, no:ICON.warn}[v];
+  return brandCardShell(b, v, ic, title, sub + (hasWarn && v !== 'no' ? ' · <span style="color:var(--no);font-weight:700">uyarı içeren satır var</span>' : ''), cs, byC, toks, full, sartli && v === 'ok');
+}
+function brandCardShell(b, v, ic, title, sub, cs, byC, toks, full, sartli){
+  const limit = full ? 99 : 4;
+  let rows = '';
+  cs.slice(0, limit).forEach(([c, s]) => {
+    const ls = byC.get(c).slice().sort(lineOrder);
+    const shown = new Set(ls.map(l => l.i)), extra = [];
+    ls.forEach(l => l.st === 'both' && (l.p || []).forEach(pid => { const pl = LN[pid]; if (pl && pl.c !== c && pl.b === b && !shown.has(pid)) { shown.add(pid); extra.push(pl); } }));
+    const notes = (CATL[c] || []).filter(n => n.k === 'note' && (n.af || /serbest|ko[sş]ulu|olmamas/i.test(n.t))).slice(0, 3);
+    rows += '<div class="crow"><div class="chead"><span class="cname">' + esc(CAT[c].n) + '</span>' + chip(s) + '</div><ul class="ls">' +
+      ls.map(l => lineRow(l, toks)).join('') + extra.map(l => lineRow(l, toks)).join('') + '</ul>' +
+      (extra.length ? '<p class="xc">Diğer listede bu ürün başka bir başlık altında yer alıyor.</p>' : '') +
+      notes.map(n => '<div class="note' + (n.af ? ' af' : '') + '"><span class="src">' + SRC[n.s] + '</span>' + esc(n.t) + '</div>').join('') + '</div>';
+  });
+  const moreBtn = cs.length > limit ? '<button class="more" data-brand="' + esc(b) + '">Tüm kategoriler (' + cs.length + ')</button>' : '';
+  return '<article class="card v-' + v + '"><div class="verdict"><span class="dot">' + ic + '</span><div><p class="vt">' + esc(BN[b] || b) + '</p><p class="vs"><b class="k">' + title + '</b>' + (sartli ? '<span class="sart">Şartlı</span>' : '') + (sub ? ' · ' + sub : '') + '</p></div></div><div class="cats">' + rows + '</div>' + moreBtn + '</article>';
+}
+function catCounts(c){
+  const bs = new Map();
+  (CATL[c] || []).forEach(l => { if (l.b && (l.k === 'ok')) bs.set(l.b, groupStatus(l.b, c)); });
+  const n = {both:0, part:0, ist:0, ank:0};
+  bs.forEach(s => { if (n[s] !== undefined) n[s]++; });
+  return n;
+}
+function meter(n){
+  const t = n.both + n.part + n.ist + n.ank || 1;
+  return '<span class="meter" aria-hidden="true"><i class="a" style="width:' + (n.both / t * 100) + '%"></i><i class="b" style="width:' + (n.part / t * 100) + '%"></i><i class="c" style="width:' + ((n.ist + n.ank) / t * 100) + '%"></i></span>';
+}
+function catTile(c){
+  const n = catCounts(c.id);
+  const tot = n.both + n.part + n.ist + n.ank;
+  const af = (CATL[c.id] || []).find(l => l.k === 'note' && l.af);
+  if (!tot && af) return '<button class="cat" data-cat="' + c.id + '"><span class="n">' + esc(c.n) + '</span><span class="s" style="color:var(--ok);font-weight:700">' + SRCN[af.s] + ': ' + esc(af.t.replace(/[()]/g, '')) + '</span></button>';
+  return '<button class="cat" data-cat="' + c.id + '"><span class="n">' + esc(c.n) + '</span>' + meter(n) + '<span class="s">' + n.both + ' iki listede · ' + (n.part + n.ist + n.ank) + ' tek listede</span></button>';
+}
+function afNotes(dom){
+  const seen = new Set();
+  return (LN.filter(l => l.k === 'note' && l.af && l.d === dom)).filter(l => { const k = l.c; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+// ---- görünümler
+function drawTabs(){
+  $('#tabs').innerHTML = DOMAINS.map(([id, n]) => '<button class="tab" aria-pressed="' + (st.dom === id) + '" data-dom="' + id + '">' + n + '</button>').join('');
+}
+function legend(){
+  return '<div class="legend">' +
+    '<div class="lg v-ok"><span class="dot">' + ICON.ok2 + '</span><div><b>Yeşil — iki listede de</b><span>Önceliğiniz: hem İstanbul hem Ankara onaylı.</span></div></div>' +
+    '<div class="lg v-one"><span class="dot">' + ICON.ok + '</span><div><b>Sarı — tek listede</b><span>Yalnızca bir dernek onaylı: paketi inceleyerek alın.</span></div></div>' +
+    '<div class="lg v-no"><span class="dot">' + ICON.no + '</span><div><b>Kırmızı — hiçbir listede yok</b><span>Kuralınıza göre almıyorsunuz.</span></div></div></div>';
+}
+function home(){
+  const cats = D.cats.filter(c => c.d === st.dom && (CATL[c.id] || []).some(l => l.k === 'ok' || (l.k === 'note' && l.af)));
+  cats.sort((a, b) => a.n.localeCompare(b.n, 'tr'));
+  let h = legend();
+  const af = afNotes(st.dom);
+  if (st.dom === 'ilac') h += ilacFirms();
+  h += '<div class="sec"><span>Kategoriler</span><span>' + cats.length + '</span></div><div class="grid">' + cats.map(catTile).join('') + '</div>';
+  if (af.length) h += '<details class="fold"><summary>Ankara’nın “tüm markalar serbest” dediği kategoriler</summary><div class="fbody">' + af.map(n => '<p><b>' + esc(CAT[n.c].n) + ':</b> ' + esc(n.t) + '</p>').join('') + '<p class="small">Bu kategorilerde listede adı geçmeyen markalar da Ankara listesine göre serbest sayılıyor.</p></div></details>';
+  h += infoBlocks();
+  out.innerHTML = h;
+}
+function ilacFirms(){
+  const fs = LN.filter(l => l.c === 'ilac-firma' && l.k === 'ok');
+  const by = new Map();
+  fs.forEach(l => { const k = l.b; if (!by.has(k)) by.set(k, []); by.get(k).push(l); });
+  const rows = [...by.entries()].sort((a, b) => (BN[a[0]] || a[0]).localeCompare(BN[b[0]] || b[0], 'tr')).map(([b, ls]) => {
+    const s = groupStatus(b, 'ilac-firma');
+    return '<div class="crow"><div class="chead"><span class="cname">' + esc(BN[b] || b) + '</span>' + chip(s) + '</div><ul class="ls">' + ls.map(l => lineRow(l, [])).join('') + '</ul></div>';
+  }).join('');
+  return '<div class="sec"><span>Tüm ilaçları glutensiz sayılan firmalar</span></div><article class="card v-ok"><div class="verdict"><span class="dot">' + ICON.ok2 + '</span><div><p class="vt">Kutudaki üretici firmaya bakın</p><p class="vs">İlaç adı listede yoksa bile üreticisi bu firmalardansa dernek(ler) glutensiz sayıyor.</p></div></div><div class="cats">' + rows + '</div></article>';
+}
+function infoBlocks(){
+  const s = D.sources;
+  const src = ['ist', 'ank'].map(k => s[k].pages.map(p => '<a href="' + esc(p.url) + '" target="_blank" rel="noopener"><span><b>' + esc(s[k].city) + '</b> · ' + esc(p.title) + '</span><span>' + fmtDate(p.modified) + '</span></a>').join('')).join('');
+  const ch = D.changes || [];
+  const chHtml = ch.length ? ch.map(e => '<p><b>' + fmtDate(e.date) + '</b></p><ul class="chg">' +
+      e.added.slice(0, 40).map(x => '<li>+ <span class="src">' + SRC[x.s] + '</span> ' + esc(x.t) + '</li>').join('') +
+      e.removed.slice(0, 40).map(x => '<li>− <span class="src">' + SRC[x.s] + '</span> <s>' + esc(x.t) + '</s></li>').join('') + '</ul>').join('')
+    : '<p>İlk sürüm. Listeler bundan sonra her hafta otomatik kontrol edilecek; eklenen ve çıkarılan ürünler burada görünecek.</p>';
+  const ex = D.extras || {};
+  const inst = STANDALONE ? '' : '<details class="fold"><summary>Telefona uygulama gibi ekleyin</summary><div class="fbody">' +
+      '<p><b>iPhone:</b> Safari’de açın → Paylaş düğmesi → <b>Ana Ekrana Ekle</b>.</p>' +
+      '<p><b>Android:</b> Chrome’da açın → sağ üstteki menü → <b>Ana ekrana ekle</b> (ya da <b>Uygulamayı yükle</b>).</p>' +
+      '<p class="small">Bir kez açtıktan sonra liste telefona kaydedilir; markette internet çekmese de arama çalışır. İnternet varken her açılışta güncel liste alınır.</p></div></details>';
+  return '<div class="sec"><span>Kaynaklar ve diğer bölümler</span></div>' + inst +
+    '<details class="fold"><summary>Son değişiklikler</summary><div class="fbody">' + chHtml + '</div></details>' +
+    '<details class="fold"><summary>Kaynak listeler ve son güncelleme tarihleri</summary><div class="fbody"><div class="src-l">' + src + '</div><p class="small">Tarihler derneklerin sitesindeki sayfanın son düzenlenme tarihidir.</p></div></details>' +
+    '<details class="fold" id="ext"><summary>Ankara listesi: glutensiz mekânlar, oteller, üniversiteler</summary><div class="fbody">' +
+      '<p class="small">Bu bölümler yalnızca Ankara listesinde var; karşılaştırma yapılmadı.</p>' +
+      '<p><b>Mekânlar (' + (ex.mekan || []).length + ')</b></p>' + (ex.mekan || []).map(v => '<div class="venue"><b>' + esc(v.name) + '</b><span>' + esc(v.details.join(' · ')) + '</span></div>').join('') +
+      '<p style="margin-top:14px"><b>Oteller (' + (ex.otel || []).length + ')</b></p>' + (ex.otel_note ? '<p class="small">' + esc(ex.otel_note) + '</p>' : '') + (ex.otel || []).map(v => '<div class="venue"><b>' + esc(v.name) + '</b><span>' + esc(v.details.join(' · ')) + '</span></div>').join('') +
+      '<p style="margin-top:14px"><b>Glutensiz menüsü olan üniversiteler</b></p><p>' + esc((ex.universite || []).join(', ')) + '</p></div></details>' +
+    '<details class="fold"><summary>Nasıl çalışır?</summary><div class="fbody">' +
+      '<p>Sayfa iki derneğin listesini satır satır okur, her satırın markasını ve kategorisini bulur, sonra diğer listede aynı markanın aynı ürününü arar.</p>' +
+      '<p><span class="kbd">Yeşil çift tik</span>: aynı ürün (ya da markanın o kategorideki tüm ürünleri) diğer listede de var. <span class="kbd">Sarı çizgi</span>: marka diğer listede var ama bu ürün yok. <span class="kbd">Sarı tik</span>: yalnızca bu listede. <span class="kbd">Göz</span>: onay değil, “etiketi okunarak alınacak” firmalar. <span class="kbd">Kırmızı üçgen</span>: listede gluten uyarısı.</p>' +
+      '<p>Eşleştirme temkinlidir: emin olamadığında “tek listede” der. Her satır listedeki orijinal metindir; altı çizili ifadeler koşul (hariç, sadece, etiketi okuyun), kırmızı ifadeler gluten uyarısıdır.</p></div></details>' +
+    '<p class="foot">Dernekler, üreticilerin üretim koşullarını haber vermeden değiştirebildiğini ve listede olsa bile ambalajdaki alerjen bilgisinin okunması gerektiğini belirtiyor. Bu sayfa listeleri birleştirir; onay vermez.</p>';
+}
+function results(q){
+  const r = search(q);
+  if (!r) return home();
+  let h = '';
+  // kategori adıyla eşleşme
+  const catOnly = r.cats.length && !r.brands.some(b => r.score(b) <= 1);
+  if (catOnly){
+    const best = r.cats.slice().sort((a, b) => (a.nn.split(' ')[0] === r.qt[0] ? 0 : 1) - (b.nn.split(' ')[0] === r.qt[0] ? 0 : 1) || a.nn.length - b.nn.length)[0];
+    const others = r.cats.filter(c => c !== best);
+    st.cat = best.id;
+    out.innerHTML = catView(best.id, true) + (others.length ? '<div class="sec"><span>İlgili kategoriler</span></div><div class="grid">' + others.slice(0, 6).map(catTile).join('') + '</div>' : '');
+    return;
+  }
+  const exact = r.brands.filter(b => r.score(b) === 0);
+  const strong = r.brands.filter(b => r.score(b) <= 2);
+  const weak = r.brands.filter(b => r.score(b) === 3);
+  const catHtml = r.cats.length ? '<div class="sec"><span>Kategori</span></div><div class="grid">' + r.cats.slice(0, 6).map(catTile).join('') + '</div>' : '';
+  if (!exact.length) h += catHtml;
+  if (r.brands.length){
+    const cards = strong.length ? strong : weak;
+    const rest = strong.length ? weak : [];
+    h += '<div class="sec"><span><b>' + cards.length + '</b> marka</span><span>' + DOMAINS.find(d => d[0] === st.dom)[1] + '</span></div>';
+    cards.slice(0, 30).forEach(b => { h += brandCard(b, r.res.get(b), r.qt, st.open.has(b)); });
+    if (cards.length > 30) h += '<p class="small">İlk 30 marka gösteriliyor; aramayı daraltın.</p>';
+    if (rest.length){
+      h += '<div class="sec"><span>Ürün adında geçenler</span><span>' + rest.length + '</span></div><div class="card">' +
+        rest.slice(0, 40).map(b => {
+          const ls = r.res.get(b), cs = [...new Set(ls.map(l => l.c))];
+          const s0 = cs.map(c => groupStatus(b, c)).sort((x, y) => ({both:0, part:1, ist:2, ank:2, read:3, warn:4}[x] - {both:0, part:1, ist:2, ank:2, read:3, warn:4}[y]))[0];
+          return '<button class="brow" data-q="' + esc(BN[b] || b) + '"><span class="lft"><span class="bn">' + esc(BN[b] || b) + '</span><span class="pv">' + esc(ls.map(l => l.t).join(' · ')) + '</span></span>' + chip(s0) + '</button>';
+        }).join('') + '</div>';
+    }
+  }
+  if (exact.length) h += catHtml;
+  if (st.dom === 'ilac' && r.brands.length) h += ilacFirms();
+  if (r.loose.length){
+    h += '<div class="sec"><span>Notlarda geçiyor</span></div><div class="card"><div class="cats">' + r.loose.slice(0, 8).map(l => '<div class="crow"><div class="chead"><span class="cname">' + esc(CAT[l.c].n) + '</span></div><ul class="ls">' + lineRow(l, r.qt) + '</ul></div>').join('') + '</div></div>';
+  }
+  if (!r.brands.length && !r.cats.length){
+    const sg = suggestions(r.qn);
+    const other = DOMAINS.filter(d => d[0] !== st.dom).map(d => [d, LN.filter(l => l.d === d[0] && r.qt.every(t => l.nn.split(' ').some(w => w.startsWith(t)))).length]).filter(x => x[1]);
+    h += '<article class="card v-no"><div class="verdict"><span class="dot">' + ICON.no + '</span><div><p class="vt">“' + esc(q.trim()) + '” hiçbir listede yok</p><p class="vs"><b class="k">Hiçbir listede bulunamadı</b> · Kuralınıza göre almıyorsunuz.</p></div></div>' +
+      (sg.length ? '<div class="empty" style="padding-top:0">Yazım farkı olabilir — bunu mu demek istediniz?</div><div class="sugg">' + sg.map(s => '<button class="sg" data-q="' + esc(s) + '">' + esc(s) + '</button>').join('') + '</div>' : '') +
+      (other.length ? '<div class="sugg">' + other.map(([d, n]) => '<button class="sg" data-dom="' + d[0] + '">' + d[1] + ' listesinde ' + n + ' sonuç</button>').join('') + '</div>' : '') +
+      '</article>';
+    if (st.dom === 'gida'){
+      const af = afNotes('gida');
+      if (af.length) h += '<details class="fold"><summary>Ama şu kategorilerde Ankara tüm markaları serbest sayıyor</summary><div class="fbody">' + af.map(n => '<p><b>' + esc(CAT[n.c].n) + ':</b> ' + esc(n.t) + '</p>').join('') + '</div></details>';
+    }
+  }
+  out.innerHTML = h;
+}
+function catView(id, fromSearch){
+  const c = CAT[id]; if (!c) return '';
+  const ls = CATL[id] || [];
+  const bs = new Map();
+  ls.forEach(l => { if (l.b && l.k !== 'note') { if (!bs.has(l.b)) bs.set(l.b, []); bs.get(l.b).push(l); } });
+  const sec = {both:[], part:[], ist:[], ank:[], read:[], warn:[]};
+  bs.forEach((lst, b) => { const s = groupStatus(b, id); (sec[s] || sec.ist).push(b); });
+  for (const k in sec) sec[k].sort((a, b) => (BN[a] || a).localeCompare(BN[b] || b, 'tr'));
+  const notes = ls.filter(l => l.k === 'note');
+  const n = catCounts(id);
+  let h = (fromSearch ? '' : '<button class="back" data-back="1">' + ICON.back + 'Tüm kategoriler</button>') +
+    '<h2>' + esc(c.n) + '</h2><p class="small">' + n.both + ' marka iki listede · ' + n.part + ' marka iki listede ama ürünler farklı · ' + n.ist + ' sadece İstanbul · ' + n.ank + ' sadece Ankara</p>';
+  if (notes.length) h += notes.map(nn => '<div class="note' + (nn.af ? ' af' : '') + '"><span class="src">' + SRC[nn.s] + '</span>' + esc(nn.t) + '</div>').join('');
+  const block = (key, title) => {
+    if (!sec[key].length) return '';
+    return '<div class="sec"><span>' + title + '</span><span>' + sec[key].length + '</span></div><div class="card">' +
+      sec[key].map(b => {
+        const lst = bs.get(b).slice().sort(lineOrder);
+        const open = st.open.has(id + '|' + b);
+        return '<button class="brow" data-ob="' + esc(id + '|' + b) + '" aria-expanded="' + open + '"><span class="lft"><span class="bn">' + esc(BN[b] || b) + '</span><span class="pv">' + esc(lst.map(l => l.t).join(' · ')) + '</span></span>' + chip(key) + '</button>' +
+          (open ? '<div class="bdet"><ul class="ls">' + lst.map(l => lineRow(l, [])).join('') + '</ul></div>' : '');
+      }).join('') + '</div>';
+  };
+  h += block('both', 'İki listede de') + block('part', 'Marka iki listede, ürünler farklı') + block('ist', 'Sadece İstanbul') + block('ank', 'Sadece Ankara') + block('read', 'Etiketi okunarak alınacak') + block('warn', 'Uyarılar');
+  return h;
+}
+
+// ---- yönlendirme
+function route(){
+  const hsh = (location.hash || '').slice(1);
+  if (hsh.startsWith('k-') && CAT[hsh.slice(2)]){
+    st.view = 'cat'; st.cat = hsh.slice(2);
+    const d = CAT[st.cat].d; if (d !== st.dom){ st.dom = d; drawTabs(); }
+    out.innerHTML = catView(st.cat, false);
+    return;
+  }
+  st.view = st.q ? 'search' : 'home';
+  if (st.q) results(st.q); else home();
+}
+let tmr;
+qi.addEventListener('input', () => {
+  st.q = qi.value; clearB.classList.toggle('on', !!st.q); st.open.clear();
+  document.body.classList.toggle('searching', !!st.q.trim());
+  clearTimeout(tmr); tmr = setTimeout(() => { if (location.hash) history.replaceState(null, '', location.pathname + location.search); route(); }, 90);
+});
+qi.addEventListener('keydown', e => { if (e.key === 'Enter') qi.blur(); });
+clearB.addEventListener('click', () => { qi.value = ''; st.q = ''; clearB.classList.remove('on'); document.body.classList.remove('searching'); route(); qi.focus(); });
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-dom]'); if (!b) return;
+  st.dom = b.dataset.dom; try { localStorage.setItem('gk-dom', st.dom); } catch (x) {}
+  drawTabs(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); route();
+});
+out.addEventListener('click', e => {
+  const t = e.target.closest('button,[data-cat]'); if (!t) return;
+  if (t.dataset.cat){ location.hash = 'k-' + t.dataset.cat; window.scrollTo(0, 0); return; }
+  if (t.dataset.back){ history.length > 1 ? history.back() : (location.hash = ''); return; }
+  if (t.dataset.q){ qi.value = t.dataset.q; qi.dispatchEvent(new Event('input')); return; }
+  if (t.dataset.dom){ st.dom = t.dataset.dom; drawTabs(); route(); return; }
+  if (t.dataset.brand){ st.open.add(t.dataset.brand); route(); return; }
+  if (t.dataset.ob){ const k = t.dataset.ob; st.open.has(k) ? st.open.delete(k) : st.open.add(k); out.innerHTML = catView(st.cat || k.split('|')[0], st.view !== 'cat'); return; }
+});
+window.addEventListener('hashchange', route);
+const bar = $('#bar');
+const io = new IntersectionObserver(([en]) => bar.classList.toggle('stuck', !en.isIntersecting), {rootMargin:'-1px 0px 0px 0px'});
+io.observe(document.querySelector('header.top'));
+load();
+}
+</script>
+</body>
+</html>
