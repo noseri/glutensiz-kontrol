@@ -146,6 +146,7 @@ details.fold[open] summary::after{content:"–"}
 .venue b{display:block;font-size:14.5px}
 .venue span{font-size:13.5px;color:var(--mut)}
 .chg{font-size:14px}
+.wk{padding:14px 16px}.wk-h{margin:0 0 6px;font-size:14.5px}.wk .chg{margin:0;padding-left:0;list-style:none}.wk .chg li{margin:5px 0;line-height:1.45}.wk .cn{color:var(--mut);font-size:12.5px}.wk .more{margin:8px 0 0;font-size:12.5px;color:var(--mut)}
 .chg li{margin:3px 0}
 .loading{padding:40px 0;color:var(--mut);text-align:center}
 .moved{margin:2px 0 12px}
@@ -443,10 +444,23 @@ function legend(){
     '<div class="lg v-one"><span class="dot">' + ICON.ok + '</span><div><b>Sarı — tek listede</b><span>Yalnızca bir dernek onaylı: paketi inceleyerek alın.</span></div></div>' +
     '<div class="lg v-no"><span class="dot">' + ICON.no + '</span><div><b>Kırmızı — hiçbir listede yok</b><span>Kuralınıza göre almıyorsunuz.</span></div></div></div>';
 }
+// son 8 gün içinde liste değiştiyse ana sayfanın tepesinde göster
+function weekChanges(){
+  const e = (D.changes || [])[0];
+  if (!e || !(e.added.length + e.removed.length)) return '';
+  const age = (Date.now() - new Date(e.date + 'T12:00:00+03:00').getTime()) / 864e5;
+  if (!(age <= 8)) return '';
+  const row = (x, add) => '<li>' + (add ? '+' : '−') + ' <span class="src">' + SRC[x.s] + '</span> ' + (add ? esc(x.t) : '<s>' + esc(x.t) + '</s>') +
+    ((CAT[x.c] || {}).n ? ' <span class="cn">· ' + esc(CAT[x.c].n) + '</span>' : '') + '</li>';
+  const items = e.added.slice(0, 8).map(x => row(x, true)).join('') + e.removed.slice(0, 8).map(x => row(x, false)).join('');
+  const more = e.added.length > 8 || e.removed.length > 8 ? '<p class="more">Tamamı aşağıda, “Son değişiklikler” bölümünde.</p>' : '';
+  return '<div class="sec"><span>Bu hafta değişenler</span><span>' + fmtDate(e.date) + '</span></div>' +
+    '<div class="card wk"><p class="wk-h"><b>' + e.added.length + '</b> satır eklendi · <b>' + e.removed.length + '</b> satır çıkarıldı</p><ul class="chg">' + items + '</ul>' + more + '</div>';
+}
 function home(){
   const cats = D.cats.filter(c => c.d === st.dom && (CATL[c.id] || []).some(l => l.k === 'ok' || (l.k === 'note' && l.af)));
   cats.sort((a, b) => a.n.localeCompare(b.n, 'tr'));
-  let h = legend();
+  let h = legend() + weekChanges();
   const af = afNotes(st.dom);
   if (st.dom === 'ilac') h += ilacFirms();
   h += '<div class="sec"><span>Kategoriler</span><span>' + cats.length + '</span></div><div class="grid">' + cats.map(catTile).join('') + '</div>';

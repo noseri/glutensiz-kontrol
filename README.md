@@ -31,6 +31,17 @@ Bir kaynak alınamazsa ya da veri şüpheli görünürse sayfa olduğu gibi kal�
 
 Elle çalıştırmak için: **Actions → Haftalık liste kontrolü → Run workflow**.
 
+## Telegram ya da anlık bildirim (isteğe bağlı)
+
+E-posta bildirimi kendiliğinden çalışır. Değişiklikleri Telegram'dan da almak için:
+
+1. Telegram'da **@BotFather** → `/newbot` ile bir bot oluşturun; size bir jeton (token) verir.
+2. Bota bir mesaj yazın (ya da ikinizin olduğu bir gruba ekleyin). Sonra tarayıcıda `https://api.telegram.org/bot<JETON>/getUpdates` adresini açıp `"chat":{"id": …}` değerini not edin.
+3. Depo → **Settings → Secrets and variables → Actions → New repository secret**: `TELEGRAM_BOT_TOKEN` ve `TELEGRAM_CHAT_ID`.
+4. **Actions → Haftalık liste kontrolü → Run workflow** → “bildirim testi” kutusunu işaretleyip çalıştırın.
+
+Telegram yerine ya da yanında `NOTIFY_WEBHOOK_URL` tanımlanabilir: mesaj bu adrese düz metin olarak gönderilir (ör. telefonda ntfy uygulamasıyla `https://ntfy.sh/<tahmin-edilmesi-zor-bir-ad>`).
+
 ## Kaynaklar
 
 - Çölyakla Yaşam Derneği (İstanbul): [Glutensiz Gıdalar](https://colyak.org.tr/glutensiz-urunler/), [Glutensiz İlaçlar](https://colyak.org.tr/glutensiz-ilaclar/), [Makyaj ve Bakım](https://colyak.org.tr/glutensiz-sabun-sampuan-cilt-agiz-bakim-dis-macunlari-makyaj-urunleri-vb/), [Tıbbi Gıda Destekleri](https://colyak.org.tr/tibbi-gida-destekleri/)

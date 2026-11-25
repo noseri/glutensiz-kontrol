@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '33 7 * * 1'   # her pazartesi 10:33 (Türkiye saati)
   workflow_dispatch:
+    inputs:
+      bildirim_testi:
+        description: 'Telegram / web kancası ayarını denemek için test mesajı gönder'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -41,7 +46,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
         run: bash scripts/apply.sh
+
+      - name: Bildirim testi
+        if: inputs.bildirim_testi
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
+        run: |
+          printf 'Bildirim ayarı çalışıyor. Listeler değiştiğinde buraya mesaj gelecek.\nhttps://%s.github.io/%s/\n' "${{ github.repository_owner }}" "${{ github.event.repository.name }}" > out/test.txt
+          bash scripts/notify.sh "Glutensiz Kontrol: bildirim testi" out/test.txt
 
       - name: Sayfayı yeniden yayınla
         if: steps.apply.outputs.deploy == 'true'

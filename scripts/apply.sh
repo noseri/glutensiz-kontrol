@@ -50,6 +50,11 @@ if [ "$kind" != "sessiz" ]; then
   fi
 fi
 
+# isteğe bağlı Telegram / web kancası bildirimi
+if [ "$kind" != "sessiz" ]; then
+  bash scripts/notify.sh "$(cat "$B/issue_title.txt")" "$B/issue.md"
+fi
+
 # tüm kaynaklar yeniden alınabildiyse açık "kaynak-hatasi" bildirimlerini kapat
 if { [ "$action" = "checked_only" ] || [ "$action" = "publish" ]; } && [ "$missing" = "0" ]; then
   for n in $(gh issue list --label kaynak-hatasi --state open --json number --jq '.[].number' 2>/dev/null || true); do
