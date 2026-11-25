@@ -1,17 +1,17 @@
 /* Glutensiz Kontrol — hızlı açılış ve çevrimdışı çalışma
  * Sayfa (index.html): önce ağ; 1,5 sn'de yanıt gelmezse telefondaki kopya. Yeni sürüm arka planda yine alınır.
- * Listeler (data.json, reports.json, bizim.json): telefondaki kopya hemen verilir, yenisi arka planda alınır.
+ * Listeler (data.json, reports.json): telefondaki kopya hemen verilir, yenisi arka planda alınır.
+ * Kişisel veriler (Bizim listemiz, tepkiler) şifreyle sunucudan gelir; burada saklanmaz.
  *   data.json değiştiyse sayfaya "veri-yenilendi" iletisi gider ve liste kendiliğinden yenilenir.
  *   Arka plandaki istek başarısız olursa "ag-yok", başarılı olursa "ag-var" iletisi gider (çevrimdışı göstergesi).
  * Yazı tipleri ve simgeler: önce önbellek.
  * “Bizim listemiz” sunucusu başka adreste olduğu için service worker ona karışmaz; uygulama kendi kopyasını saklar.
  */
-const CACHE = 'gk-v4';
+const CACHE = 'gk-v5';   // v5: bizim.json kalktı (kişisel liste artık herkese açık değil)
 const SHELL = [
   './index.html',
   './data.json',
   './reports.json',
-  './bizim.json',
   './manifest.webmanifest',
   './fonts/manrope-latin.woff2',
   './fonts/manrope-latin-ext.woff2',
@@ -42,7 +42,7 @@ self.addEventListener('fetch', e => {
     e.respondWith(page(e, req));
     return;
   }
-  const m = url.pathname.match(/\/(data|reports|bizim)\.json$/);
+  const m = url.pathname.match(/\/(data|reports)\.json$/);
   if (m) {
     e.respondWith(list(e, url, './' + m[1] + '.json'));
     return;

@@ -68,12 +68,13 @@ if { [ "$action" = "checked_only" ] || [ "$action" = "publish" ]; } && [ "$missi
   done
 fi
 
-# "Bizim listemiz" haftalık yedeği (sunucu adresi tanımlıysa)
-if [ -n "${BIZIM_API:-}" ]; then
-  python3 -I scripts/bizim_yedek.py "$BIZIM_API" site/bizim.json || true
-  if ! git diff --quiet -- site/bizim.json; then
-    git add site/bizim.json
-    if git commit -m "Bizim listemiz haftalık yedeği ($today)"; then push; deploy=true; fi
+# kişisel kısmın (Bizim listemiz, tepkiler, dokunma kayıtları) haftalık şifreli yedeği; site dışında durur
+if [ -n "${BIZIM_API:-}" ] && [ -n "${YEDEK_SIFRE:-}" ]; then
+  if python3 -I scripts/yedek.py al "$BIZIM_API" yedek/kisisel.enc; then
+    if [ -n "$(git status --porcelain -- yedek/kisisel.enc)" ]; then
+      git add yedek/kisisel.enc
+      if git commit -m "Kişisel kısmın şifreli yedeği ($today)"; then push; fi
+    fi
   fi
 fi
 

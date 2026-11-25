@@ -21,7 +21,7 @@ import unicodedata
 
 from bs4 import BeautifulSoup
 
-PIPELINE_VERSION = 3
+PIPELINE_VERSION = 4   # 4: her satırda kalıcı ürün numarası (u)
 
 # ---------------------------------------------------------------- metin ----
 _TR_UP = {'I': 'ı', 'İ': 'i'}
@@ -1730,7 +1730,7 @@ def build(pages, prev=None):
             head_idx[h] = len(heads)
             heads.append(h)
         rec = {'i': ln['id'], 's': ln['src'], 'c': ln['cat'], 't': ln['text'], 'h': head_idx[h],
-               'k': ln['kind']}
+               'k': ln['kind']}   # 'u' (kalıcı ürün numarası) aşağıda assign_uids ile eklenir
         if ln.get('brand'):
             rec['b'] = ln['brand']
         if ln.get('st'):
@@ -1759,9 +1759,91 @@ def build(pages, prev=None):
         'extras': extras,
         'changes': [],
     }
+    data['son_u'] = assign_uids(out_lines, prev, data['brands'], {c['id']: c['d'] for c in data['cats']})
     data['changes'] = diff_changes(data, prev)
     data['checked'] = data['generated']
     return data, lines
+
+
+UID_STOP = {'ve', 'ile', 'mg', 'ml', 'gr', 'kg', 'lt', 'cl', 'iu'}
+# gıda ve kozmetikte gramaj/hacim aynı ürünün farklı yazımıdır; ilaç ve takviyede doz ayrı üründür
+UID_OLCU = re.compile(r'^\d+(?:[.,]\d+)?(?:g|gr|kg|ml|cl|lt|l|cc|adet)?$')
+
+
+def assign_uids(out_lines, prev, brands, cat_domain):
+    """Her satıra kalıcı ürün numarası (u) verir; tepkiler ve kişisel kayıtlar bu numaraya bağlanır.
+
+    Önceki haftanın verisiyle eşleştirir:
+      1) aynı kaynak ve aynı metin (önce aynı kategoride) → aynı numara;
+      2) kalanlar: aynı kaynak, aynı marka ve aynı alanda metni en benzer satır → numarayı devralır
+         (yazımı değişmiş satır; gıda ve kozmetikte gramaj farkı sayılmaz). Benzerlik en az 0.6 ve ikinci adaydan en az 0.15 fazla olmalı;
+         emin değilse devralmaz, satır yeni ürün sayılır;
+      3) kalanlara yeni numara. Numaralar hiçbir zaman yeniden kullanılmaz (son_u).
+    Döndürür: şimdiye kadar verilmiş en büyük numara.
+    """
+    from collections import defaultdict, deque
+    prev = prev or {}
+    old = [l for l in prev.get('lines', []) if isinstance(l.get('u'), int)]
+    son = max([int(prev.get('son_u') or 0)] + [l['u'] for l in old])
+    allb = dict(prev.get('brands') or {}); allb.update(brands or {})
+    used = set()
+
+    def take(q):
+        while q:
+            u = q.popleft()
+            if u not in used:
+                used.add(u)
+                return u
+        return None
+    by_text_cat, by_text = defaultdict(deque), defaultdict(deque)
+    for l in old:
+        k = (l['s'], norm(l['t']))
+        by_text_cat[k + (l['c'],)].append(l['u'])
+        by_text[k].append(l['u'])
+    for l in out_lines:
+        l.pop('u', None)
+        u = take(by_text_cat[(l['s'], norm(l['t']), l['c'])])
+        if u is not None:
+            l['u'] = u
+    for l in out_lines:
+        if 'u' not in l:
+            u = take(by_text[(l['s'], norm(l['t']))])
+            if u is not None:
+                l['u'] = u
+
+    def toks(l):
+        bw = set(norm(allb.get(l.get('b'), '') or '').split())
+        olcu = cat_domain.get(l['c']) in ('gida', 'kozmetik')
+        return {w for w in norm(l['t']).split()
+                if len(w) > 1 and w not in UID_STOP and w not in bw and not (olcu and UID_OLCU.match(w))}
+    bucket = defaultdict(list)
+    for l in old:
+        if l['u'] not in used:
+            bucket[(l['s'], l.get('b') or '', cat_domain.get(l['c']))].append((l['u'], toks(l)))
+    pairs = []
+    for l in out_lines:
+        if 'u' in l:
+            continue
+        a = toks(l)
+        cands = bucket.get((l['s'], l.get('b') or '', cat_domain.get(l['c'])), [])
+        if not a or not cands:
+            continue
+        scored = sorted(((len(a & b) / len(a | b), u) for u, b in cands if b), reverse=True)
+        if not scored:
+            continue
+        best, u = scored[0]
+        second = scored[1][0] if len(scored) > 1 else 0.0
+        if best >= 0.6 and best - second >= 0.15:
+            pairs.append((best, u, l))
+    for best, u, l in sorted(pairs, key=lambda x: -x[0]):
+        if u not in used and 'u' not in l:
+            used.add(u)
+            l['u'] = u
+    for l in out_lines:
+        if 'u' not in l:
+            son += 1
+            l['u'] = son
+    return son
 
 
 def diff_changes(new, prev):

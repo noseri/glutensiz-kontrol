@@ -9,9 +9,17 @@ Her ürün satırı için iki listeye bakar:
 - **Yeşil:** ürün iki listede de var.
 - **Sarı:** yalnızca bir listede; paketi inceleyerek alın.
 - **Kırmızı:** hiçbir listede yok.
-- **Mavi (Bizim listemiz):** sizin eklediğiniz ürün. Dernek onayı değildir; kimin, ne zaman eklediği yazılıdır.
+- **Mavi (Bizim listemiz):** sizin eklediğiniz ürün. Dernek onayı değildir; kimin, ne zaman eklediği yazılıdır. Yalnızca giriş yapılmış telefonda görünür.
 
 İki listede olup “hariç, sadece, etiketi okunmalı” gibi bir şart taşıyan markalar **Şartlı** olarak işaretlenir.
+
+## Kişisel kısım: giriş
+
+Bizim listemiz, tepkiler ve “bize dokundu” kayıtları kişiseldir; yalnızca şifresi girilmiş telefonda görünür. Herkese açık sayfada yalnızca dernek listeleri vardır: kişisel düğmeler, satırlara dokunma ve “Tepkilerimiz” şifresiz telefonda hiç görünmez.
+
+- **Giriş:** ana sayfanın en altındaki “Bizim listemiz · giriş” bağlantısı. Şifre bir kez girilir, o telefonda saklanır.
+- **Çıkış:** Bizim listemiz kartının altındaki “çıkış”. Şifre ve kişisel verilerin telefondaki kopyası silinir.
+- Sunucu şifreyi tanımazsa (ör. şifre değiştirildiyse) telefon kendiliğinden çıkış yapar ve yeniden giriş ister.
 
 ## Bizim listemiz (kendi eklediğimiz ürünler)
 
@@ -21,17 +29,18 @@ Derneklerde olmayan ama güvendiğiniz ürünleri uygulamadan ekleyebilirsiniz. 
 - **Ne zaman:** tarih ve saat sunucunun saatidir.
 - **Düzeltme:** “Düzelt” ile yazım hatası ya da eksik bilgi tek adımda düzeltilir. Eski kayıt geçmişte “düzeltildi” olarak kalır; listede ilk ekleyen ve düzelten ayrı ayrı yazar.
 - **Değiştirilemez kayıt:** satırlar silinmez. “Listeden çıkar” ürünü listeden kaldırır ama kaydı “Geçmiş” bölümünde, kimin ne zaman çıkardığıyla birlikte saklar. Veritabanındaki tetikleyiciler eklenme ve çıkarma kaydının sonradan düzenlenmesini engeller (`worker/schema.sql`).
-- **Nerede:** Cloudflare Workers + D1 (ücretsiz katman), kodu `worker/`. Liste herkese açık olarak okunabilir; ekleme ve çıkarma şifre ister. Haftalık kontrol listenin bir yedeğini `site/bizim.json` olarak depoya da yazar.
+- **Nerede:** Cloudflare Workers + D1 (ücretsiz katman), kodu `worker/`. Okuma da yazma da şifre ister.
+- **Yedek:** haftalık kontrol kişisel kısmın tamamını (Bizim listemiz, tepkiler, dokunma kayıtları) **şifreleyerek** `yedek/kisisel.enc` dosyasına yazar; değişiklik yoksa dokunmaz. Dosya herkese açık depoda durur ama şifresiz okunamaz (scrypt + AES-256-GCM). Şifre mayildiz’in şifresidir (GitHub’daki `ANAHTAR_1`); şifre değişirse eski yedekleri açmak için eski şifre gerekir. Açmak için: `YEDEK_SIFRE='…' python3 scripts/yedek.py ac yedek/kisisel.enc > kisisel.json`
 
 ## Tepkiler (beğendim, beğenmedim, favori, bize dokundu)
 
 Herhangi bir ürün satırına (dernek listesi ya da Bizim listemiz) dokununca küçük bir pencere açılır. Her kişi kendi tepkisini verir; satırda baş harfle görünür (♥ M · 👎 H), pencerede tam adla.
 
 - **Beğendim / Beğenmedim / Favori:** beğendim ile beğenmedim birbirini dışlar; favori beğeni sayılır. Beğenmeme nedenine kısa bir not yazılabilir.
-- **Bize dokundu:** listede olsa bile rahatsızlık yapan ürün için. Not ve tarihle saklanır; ürünün satırında ve markanın kartında kırmızı uyarı olarak ikinizde de görünür.
+- **Bize dokundu (günlük):** listede olsa bile rahatsızlık yapan ürün için her olay ayrı kaydedilir: ne zaman, kim, ne oldu, parti/seri no. Pencerede geçmiş listelenir (en yenisi üstte), herkes kendi kaydını silebilir. Ürünün satırında (“Dokundu 2 kez · …”) ve markanın kartında kırmızı uyarı olarak ikinizde de görünür.
 - **Tat güvenlik değildir:** tepkiler yeşil/sarı/kırmızı kararı hiçbir zaman değiştirmez.
-- **Ana sayfa:** “Tepkilerimiz” altında Dokunan, Favori, Beğenilen ve Beğenilmeyen ürünler kimin ne dediğiyle listelenir. İki listedeki aynı ürüne verilen tepkiler tek satırda birleşir; liste güncellenip satırın yazımı değişse de tepki en benzer satıra bağlanır.
-- **Gizli:** tepkiler yalnızca şifresi girilmiş telefonlarda görünür. Herkese açık listede ve depodaki haftalık yedekte (`site/bizim.json`) yer almaz; şifre telefondan silinince tepkilerin telefondaki kopyası da silinir.
+- **Ana sayfa:** “Tepkilerimiz” altında Dokunan, Favori, Beğenilen ve Beğenilmeyen ürünler kimin ne dediğiyle listelenir. İki listedeki aynı ürüne verilen tepkiler tek satırda birleşir. Dernek listelerinden düşen bir ürün “Dernek listelerinde artık bu satır yok” uyarısıyla işaretlenir.
+- **Kalıcı ürün numarası:** haftalık derleme her dernek satırına bir numara verir (`data.json` içinde `u`). Satırın yazımı değişirse (ör. gramaj eklenirse) numara korunur; tepkiler ve kayıtlar bu numaraya bağlıdır. Emin olunamayan değişikliklerde yeni numara verilir; numaralar hiç yeniden kullanılmaz (`scripts/pipeline.py` → `assign_uids`).
 
 ### Bir kerelik kurulum
 
@@ -63,6 +72,17 @@ Her pazartesi 10:33’te (Türkiye saati) GitHub Actions şunları yapar:
 Bir kaynak alınamazsa ya da veri şüpheli görünürse sayfa olduğu gibi kalır ve issue açılır. “Son kontrol” tarihi yalnızca bütün kaynaklar alındığında ilerler.
 
 Elle çalıştırmak için: **Actions → Haftalık liste kontrolü → Run workflow**.
+
+## Testler
+
+Sayfa da sunucu da yayınlanmadan önce testlerden geçer (**Actions → Testler**); bir test bile kalırsa yayın yapılmaz, canlı sürüm olduğu gibi kalır. Haftalık güncelleme de bu kapıdan geçer.
+
+- **Sunucu:** şifre ve gizlilik, ekleme/düzeltme/çıkarma, tepkiler, dokunma kayıtları, hatalı istekler.
+- **İki telefon:** mayildiz ve heyybenbus aynı anda; giriş/çıkış, Bizim listemiz, tepkiler, dokunma günlüğü, çevrimdışı açılış, erişilebilirlik.
+- **Kalıcı numara ve yedek:** yazımı değişen satırın numarasını koruması; şifreli yedeğin doğru açılması.
+- Arayüz testleri sabit bir test verisiyle (`tests/veri/data.json`) çalışır, haftalık liste değişse de bozulmaz; gerçek liste ayrıca kısa bir duman testinden geçer.
+
+Yerelde: `npm ci --prefix tests` ve `pip install playwright`, sonra `bash tests/calistir.sh` (tek bir test için adını ekleyin: `bash tests/calistir.sh test_tepki`).
 
 ## Telegram ya da anlık bildirim (isteğe bağlı)
 

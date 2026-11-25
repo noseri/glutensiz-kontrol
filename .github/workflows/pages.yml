@@ -16,7 +16,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/tests.yml
+
   paketle:
+    needs: test          # testler geçmeden yayın yok
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -18,7 +18,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/tests.yml
+
   yayinla:
+    needs: test          # testler geçmeden yayın yok
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -88,8 +92,10 @@ jobs:
           if [ -z "$url" ]; then echo "::warning::Sunucu adresi yayın çıktısında bulunamadı."; exit 0; fi
           echo "Sunucu adresi: $url" | tee -a "$GITHUB_STEP_SUMMARY"
           for i in $(seq 1 12); do
-            if curl -fsS --max-time 10 "$url/liste" > "$RUNNER_TEMP/liste.json" 2>/dev/null; then
-              python3 -c "import json,sys; j=json.load(open(sys.argv[1])); print('Liste:', len(j['urunler']), 'ürün,', len(j['cikarilanlar']), 'çıkarılmış')" "$RUNNER_TEMP/liste.json" | tee -a "$GITHUB_STEP_SUMMARY"
+            # kişisel veriler şifre ister: şifresiz istek 401 almalı, açık uç çalışıyor demeli
+            kod=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$url/veri" || true)
+            if curl -fsS --max-time 10 "$url/" | grep -q 'çalışıyor' && [ "$kod" = "401" ]; then
+              echo "Sunucu çalışıyor; kişisel veriler şifresiz okunamıyor (401)." | tee -a "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
             sleep 10

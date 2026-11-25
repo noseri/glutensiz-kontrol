@@ -1,0 +1,9 @@
+{
+  "name": "glutensiz-kontrol-testler",
+  "private": true,
+  "description": "Testler için yerel sunucu (wrangler) ve erişilebilirlik denetimi (axe-core)",
+  "devDependencies": {
+    "axe-core": "4.14.1",
+    "wrangler": "4.168.0"
+  }
+}

@@ -1,0 +1,41 @@
+name: Testler
+
+# Sayfa ve sunucu yayınlanmadan önce çalışır (pages.yml ve worker.yml bunu çağırır); geçmezse yayın olmaz.
+# Arayüz testleri sabit test verisiyle (tests/veri/data.json), gerçek liste ise kısa bir duman testiyle denetlenir.
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+    paths: ['tests/**', 'scripts/**', '.github/workflows/tests.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Bağımlılıklar
+        run: |
+          pip install --quiet -r scripts/requirements.txt playwright==1.63.0
+          npm ci --prefix tests --no-audit --no-fund --loglevel=error
+          # GitHub'ın Ubuntu makinelerinde Chrome hazır; yoksa Playwright'ın kendi tarayıcısı kurulur
+          [ -x /usr/bin/google-chrome ] || python -m playwright install --with-deps chromium
+
+      - name: Testler
+        run: bash tests/calistir.sh
