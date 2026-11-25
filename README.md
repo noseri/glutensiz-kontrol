@@ -9,8 +9,30 @@ Her ürün satırı için iki listeye bakar:
 - **Yeşil:** ürün iki listede de var.
 - **Sarı:** yalnızca bir listede; paketi inceleyerek alın.
 - **Kırmızı:** hiçbir listede yok.
+- **Mavi (Bizim listemiz):** sizin eklediğiniz ürün. Dernek onayı değildir; kimin, ne zaman eklediği yazılıdır.
 
 İki listede olup “hariç, sadece, etiketi okunmalı” gibi bir şart taşıyan markalar **Şartlı** olarak işaretlenir.
+
+## Bizim listemiz (kendi eklediğimiz ürünler)
+
+Derneklerde olmayan ama güvendiğiniz ürünleri uygulamadan ekleyebilirsiniz. Eklenen ürün mavi “Bizim listemiz” etiketiyle görünür; yeşil/sarı/kırmızı kararı değiştirmez.
+
+- **Kim:** her kişinin kendi ekleme şifresi vardır. Hangi adın yazılacağını şifre belirler; uygulamadan ad gönderilmez.
+- **Ne zaman:** tarih ve saat sunucunun saatidir.
+- **Değiştirilemez kayıt:** satırlar silinmez. “Listeden çıkar” ürünü listeden kaldırır ama kaydı “Geçmiş” bölümünde, kimin ne zaman çıkardığıyla birlikte saklar. Veritabanındaki tetikleyiciler eklenme ve çıkarma kaydının sonradan düzenlenmesini engeller (`worker/schema.sql`).
+- **Nerede:** Cloudflare Workers + D1 (ücretsiz katman), kodu `worker/`. Liste herkese açık olarak okunabilir; ekleme ve çıkarma şifre ister. Haftalık kontrol listenin bir yedeğini `site/bizim.json` olarak depoya da yazar.
+
+### Bir kerelik kurulum
+
+1. Cloudflare panelinde **Workers & Pages** sayfasını bir kez açın (hesabın `workers.dev` adresi böylece oluşur).
+2. **My Profile → API Tokens → Create Token → “Edit Cloudflare Workers”** şablonu. *Account Resources* bölümünde yalnızca kendi hesabınızı seçin, oluşturun ve jetonu kopyalayın.
+3. Depo → **Settings → Secrets and variables → Actions → New repository secret** ile üç gizli değer ekleyin:
+   - `CLOUDFLARE_API_TOKEN`: 2. adımdaki jeton
+   - `ANAHTAR_1`: birinci kişinin ekleme şifresi (en az 8 karakter; 3–4 kelimelik bir cümle iyi olur)
+   - `ANAHTAR_2`: ikinci kişinin ekleme şifresi
+4. **Actions → Bizim listemiz sunucusu → Run workflow.** Şifre değiştirmek için gizli değeri güncelleyip bu iş akışını yeniden çalıştırmak yeterli.
+
+Görünen adlar `worker/wrangler.toml` içindeki `KISILER` satırındadır.
 
 ## Telefona ekleme
 

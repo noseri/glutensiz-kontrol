@@ -1,0 +1,21 @@
+# Glutensiz Kontrol — "Bizim listemiz" sunucusu
+# Yayın: .github/workflows/worker.yml (GitHub'daki CLOUDFLARE_API_TOKEN ile).
+name = "glutensiz-liste"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+# Tarayıcıdan yalnızca bu adresteki uygulama istek atabilir.
+IZINLI_KOKENLER = "https://noseri.github.io"
+# Gizli değerin adı → listede görünen ad. Şifrelerin kendisi GitHub'daki ANAHTAR_1 / ANAHTAR_2 gizli değerlerinden gelir.
+KISILER = '{"ANAHTAR_1": "Adem", "ANAHTAR_2": "B"}'
+
+[[d1_databases]]
+binding = "DB"
+database_name = "glutensiz-liste"
+database_id = "9d83ab78-d120-4067-bb2d-48b9ab46b8de"
+
+[observability]
+enabled = true

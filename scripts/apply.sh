@@ -68,5 +68,14 @@ if { [ "$action" = "checked_only" ] || [ "$action" = "publish" ]; } && [ "$missi
   done
 fi
 
+# "Bizim listemiz" haftalık yedeği (sunucu adresi tanımlıysa)
+if [ -n "${BIZIM_API:-}" ]; then
+  python3 -I scripts/bizim_yedek.py "$BIZIM_API" site/bizim.json || true
+  if ! git diff --quiet -- site/bizim.json; then
+    git add site/bizim.json
+    if git commit -m "Bizim listemiz haftalık yedeği ($today)"; then push; deploy=true; fi
+  fi
+fi
+
 echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
 echo "Sonuç: $action / $kind / yayın=$deploy"

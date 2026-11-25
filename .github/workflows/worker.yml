@@ -1,0 +1,96 @@
+name: Bizim listemiz sunucusu
+
+# worker/ klasörü değişince (ya da elle başlatılınca) Cloudflare'daki küçük sunucuyu yayınlar
+# ve ekleme şifrelerini (ANAHTAR_1, ANAHTAR_2) sunucuya gizli değer olarak yükler.
+# CLOUDFLARE_API_TOKEN eklenmemişse hiçbir şey yapmadan başarıyla biter.
+
+on:
+  push:
+    branches: [main]
+    paths: ['worker/**', '.github/workflows/worker.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bizim-listemiz-sunucu
+  cancel-in-progress: false
+
+jobs:
+  yayinla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: Cloudflare anahtarı var mı?
+        id: k
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN henüz eklenmemiş; sunucu yayını atlandı."
+            echo "var=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "var=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.var == '1'
+
+      - uses: actions/setup-node@v4
+        if: steps.k.outputs.var == '1'
+        with:
+          node-version: '22'
+
+      - name: Wrangler
+        if: steps.k.outputs.var == '1'
+        run: |
+          npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/wr" wrangler@4 > /dev/null
+          echo "$RUNNER_TEMP/wr/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Hesap
+        if: steps.k.outputs.var == '1'
+        working-directory: worker
+        run: wrangler whoami
+
+      - name: Yayınla
+        if: steps.k.outputs.var == '1'
+        working-directory: worker
+        run: wrangler deploy 2>&1 | tee "$RUNNER_TEMP/deploy.log"; exit "${PIPESTATUS[0]}"
+
+      - name: Ekleme şifrelerini yükle
+        if: steps.k.outputs.var == '1'
+        working-directory: worker
+        env:
+          ANAHTAR_1: ${{ secrets.ANAHTAR_1 }}
+          ANAHTAR_2: ${{ secrets.ANAHTAR_2 }}
+        run: |
+          args=()
+          for k in ANAHTAR_1 ANAHTAR_2; do
+            v="${!k}"
+            v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"
+            if [ "${#v}" -ge 8 ]; then
+              args+=(--arg "$k" "$v")
+            else
+              echo "::warning::$k eksik ya da 8 karakterden kısa; bu kişi ekleme yapamaz."
+            fi
+          done
+          if [ "${#args[@]}" -gt 0 ]; then
+            jq -n "${args[@]}" '$ARGS.named' | wrangler secret bulk
+          fi
+
+      - name: Sağlık kontrolü
+        if: steps.k.outputs.var == '1'
+        run: |
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' "$RUNNER_TEMP/deploy.log" | head -n1 || true)
+          if [ -z "$url" ]; then echo "::warning::Sunucu adresi yayın çıktısında bulunamadı."; exit 0; fi
+          echo "Sunucu adresi: $url" | tee -a "$GITHUB_STEP_SUMMARY"
+          for i in $(seq 1 12); do
+            if curl -fsS --max-time 10 "$url/liste" > "$RUNNER_TEMP/liste.json" 2>/dev/null; then
+              python3 -c "import json,sys; j=json.load(open(sys.argv[1])); print('Liste:', len(j['urunler']), 'ürün,', len(j['cikarilanlar']), 'çıkarılmış')" "$RUNNER_TEMP/liste.json" | tee -a "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::warning::Sunucu henüz yanıt vermiyor; yeni workers.dev adresleri birkaç dakikada açılabilir."
