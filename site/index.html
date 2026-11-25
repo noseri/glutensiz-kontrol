@@ -148,6 +148,7 @@ details.fold[open] summary::after{content:"–"}
 .chg{font-size:14px}
 .chg li{margin:3px 0}
 .loading{padding:40px 0;color:var(--mut);text-align:center}
+.moved{margin:2px 0 12px}
 .foot{margin-top:28px;font-size:12.5px;color:var(--mut);line-height:1.55}
 .kbd{font-weight:700;color:var(--ink)}
 @media (prefers-reduced-motion:no-preference){.card{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
@@ -249,6 +250,7 @@ function lineRow(l, toks){
 }
 const GST = {
   both: ['c-ok', ICON.ok2, 'İki listede de'],
+  mixed: ['c-ok', ICON.half, 'Bazıları iki listede'],
   part: ['c-part', ICON.half, 'Marka iki listede, ürünler farklı'],
   ist: ['c-one', ICON.ok, 'Sadece İstanbul'],
   ank: ['c-one', ICON.ok, 'Sadece Ankara'],
@@ -261,7 +263,9 @@ function groupStatus(b, c){
   const ls = (LBY[b] || []).filter(l => l.c === c);
   if (ls.length && ls.every(l => l.k === 'warn')) return 'warn';
   if (ls.length && ls.every(l => l.k === 'read' || l.k === 'warn' || l.k === 'info')) return 'read';
-  return g ? g.st : (ls.some(l => l.s === 'ist') ? (ls.some(l => l.s === 'ank') ? 'part' : 'ist') : 'ank');
+  const s = g ? g.st : (ls.some(l => l.s === 'ist') ? (ls.some(l => l.s === 'ank') ? 'part' : 'ist') : 'ank');
+  if (s === 'both' && ls.some(l => l.k === 'ok' && (l.st === 'part' || l.st === 'one'))) return 'mixed';
+  return s;
 }
 
 // ---- çevrimdışı kullanım
@@ -280,13 +284,13 @@ addEventListener('offline', showUpd);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   addEventListener('load', () => navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).catch(() => {}));
 }
-const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const STANDALONE = (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 
 // ---- veri
 async function load(){
   try {
     const r = await fetch('data.json', {cache:'no-cache'});
-    FROM_CACHE = r.headers.get('x-gk-offline') === '1';
+    FROM_CACHE = !!(r.headers && r.headers.get && r.headers.get('x-gk-offline') === '1');
     D = await r.json();
   } catch (e) {
     out.innerHTML = '<div class="card"><div class="empty">Liste verisi yüklenemedi. Sayfayı yenileyin.</div></div>';
@@ -353,7 +357,7 @@ function suggestions(qn){
   return outS.sort((a, b) => a[0] - b[0]).slice(0, 6).map(x => x[1]);
 }
 function verdictFor(sts){
-  if (sts.includes('both')) return 'ok';
+  if (sts.includes('both') || sts.includes('mixed')) return 'ok';
   if (sts.includes('part')) return 'part';
   if (sts.includes('ist') || sts.includes('ank')) return 'one';
   if (sts.includes('read')) return 'rd';
@@ -362,7 +366,7 @@ function verdictFor(sts){
 function brandCard(b, lines, toks, full){
   const byC = new Map();
   lines.forEach(l => { if (!byC.has(l.c)) byC.set(l.c, []); byC.get(l.c).push(l); });
-  const order = {both:0, part:1, ist:2, ank:2, read:3, warn:4};
+  const order = {both:0, mixed:1, part:2, ist:3, ank:3, read:4, warn:5};
   const isCond = l => l.k === 'ok' && (l.w || CONDT.test(l.t));
   const condC = new Set(lines.filter(isCond).map(l => l.c));
   const cs = [...byC.keys()].map(c => [c, groupStatus(b, c)]).sort((x, y) => order[x[1]] - order[y[1]] || condC.has(y[0]) - condC.has(x[0]) || CAT[x[0]].n.localeCompare(CAT[y[0]].n, 'tr'));
@@ -377,7 +381,11 @@ function brandCard(b, lines, toks, full){
     const ic2 = ICON.warn;
     return brandCardShell(b, 'no', ic2, 'Gluten uyarısı var', 'Listelerde bu marka için uyarı satırı bulunuyor; satırları okuyun.', cs, byC, toks, full);
   }
-  if (v === 'ok'){ title = 'İki listede de var'; sub = nb + ' kategoride <strong>iki listede</strong>' + (n1 ? ', ' + n1 + ' kategoride tek listede' : '') + (sartli ? '<br>Şart var (' + [...condC].map(c => esc(CAT[c].n)).slice(0, 3).join(', ') + '): altı çizili ifadeleri okuyun.' : ''); }
+  const okL = lines.filter(l => l.k === 'ok');
+  const pBoth = Math.max(okL.filter(l => l.st === 'both' && l.s === 'ist').length, okL.filter(l => l.st === 'both' && l.s === 'ank').length);
+  const pOne = okL.filter(l => l.st === 'part' || l.st === 'one').length;
+  if (v === 'ok' && pOne){ title = pBoth >= pOne ? 'Çoğu ürünü iki listede' : 'Bazı ürünleri iki listede'; sub = '<strong>' + pBoth + ' ürün iki listede</strong>, ' + pOne + ' ürün tek listede' + (sartli ? '<br>Şart var (' + [...condC].map(c => esc(CAT[c].n)).slice(0, 3).join(', ') + '): altı çizili ifadeleri okuyun.' : ''); }
+  else if (v === 'ok'){ title = 'İki listede de var'; sub = nb + ' kategoride <strong>iki listede</strong>' + (n1 ? ', ' + n1 + ' kategoride tek listede' : '') + (sartli ? '<br>Şart var (' + [...condC].map(c => esc(CAT[c].n)).slice(0, 3).join(', ') + '): altı çizili ifadeleri okuyun.' : ''); }
   else if (v === 'part'){ title = 'Marka iki listede, bu ürünler tek listede'; sub = 'Ürünü kontrol edin: aşağıda iki listenin metni yan yana.'; }
   else if (v === 'one'){ const only = sts.includes('ist') && !sts.includes('ank') ? 'İstanbul' : (sts.includes('ank') && !sts.includes('ist') ? 'Ankara' : 'tek'); title = 'Yalnızca ' + (only === 'tek' ? 'tek listede' : only + ' listesinde'); sub = '<span class="k">Paketi inceleyerek</span> alın.'; }
   else if (v === 'rd'){ title = 'Onay listesinde değil — etiketi okunacak firmalar arasında'; sub = 'Dernekler bu firmanın ürünlerini ambalaj okunarak almayı öneriyor.'; }
@@ -404,7 +412,7 @@ function brandCardShell(b, v, ic, title, sub, cs, byC, toks, full, sartli){
 }
 function catCounts(c){
   const bs = new Map();
-  (CATL[c] || []).forEach(l => { if (l.b && (l.k === 'ok')) bs.set(l.b, groupStatus(l.b, c)); });
+  (CATL[c] || []).forEach(l => { if (l.b && (l.k === 'ok')) { const s = groupStatus(l.b, c); bs.set(l.b, s === 'mixed' ? 'both' : s); } });
   const n = {both:0, part:0, ist:0, ank:0};
   bs.forEach(s => { if (n[s] !== undefined) n[s]++; });
   return n;
@@ -484,16 +492,31 @@ function infoBlocks(){
     '<p class="foot">Dernekler, üreticilerin üretim koşullarını haber vermeden değiştirebildiğini ve listede olsa bile ambalajdaki alerjen bilgisinin okunması gerektiğini belirtiyor. Bu sayfa listeleri birleştirir; onay vermez.</p>';
 }
 function results(q){
-  const r = search(q);
+  let r = search(q);
   if (!r) return home();
   let h = '';
+  // bu sekmede hiç sonuç yoksa diğer sekmelere bak (ör. Gıda'da "Parol" → İlaç)
+  if (!r.brands.length && !r.cats.length){
+    const from = st.dom;
+    let moved = null;
+    for (const [d, n] of DOMAINS){
+      if (d === from) continue;
+      st.dom = d;
+      const r2 = search(q);
+      if (r2 && (r2.brands.length || r2.cats.length)){ r = r2; moved = n; break; }
+    }
+    if (moved){
+      drawTabs();
+      h += '<p class="small moved">“' + esc(q.trim()) + '” ' + DOMAINS.find(d => d[0] === from)[1] + ' sekmesinde yok; <b>' + moved + '</b> listesinde gösteriliyor.</p>';
+    } else st.dom = from;
+  }
   // kategori adıyla eşleşme
   const catOnly = r.cats.length && !r.brands.some(b => r.score(b) <= 1);
   if (catOnly){
     const best = r.cats.slice().sort((a, b) => (a.nn.split(' ')[0] === r.qt[0] ? 0 : 1) - (b.nn.split(' ')[0] === r.qt[0] ? 0 : 1) || a.nn.length - b.nn.length)[0];
     const others = r.cats.filter(c => c !== best);
     st.cat = best.id;
-    out.innerHTML = catView(best.id, true) + (others.length ? '<div class="sec"><span>İlgili kategoriler</span></div><div class="grid">' + others.slice(0, 6).map(catTile).join('') + '</div>' : '');
+    out.innerHTML = h + catView(best.id, true) + (others.length ? '<div class="sec"><span>İlgili kategoriler</span></div><div class="grid">' + others.slice(0, 6).map(catTile).join('') + '</div>' : '');
     return;
   }
   const exact = r.brands.filter(b => r.score(b) === 0);
@@ -511,7 +534,8 @@ function results(q){
       h += '<div class="sec"><span>Ürün adında geçenler</span><span>' + rest.length + '</span></div><div class="card">' +
         rest.slice(0, 40).map(b => {
           const ls = r.res.get(b), cs = [...new Set(ls.map(l => l.c))];
-          const s0 = cs.map(c => groupStatus(b, c)).sort((x, y) => ({both:0, part:1, ist:2, ank:2, read:3, warn:4}[x] - {both:0, part:1, ist:2, ank:2, read:3, warn:4}[y]))[0];
+          const so = {both:0, mixed:1, part:2, ist:3, ank:3, read:4, warn:5};
+          const s0 = cs.map(c => groupStatus(b, c)).sort((x, y) => so[x] - so[y])[0];
           return '<button class="brow" data-q="' + esc(BN[b] || b) + '"><span class="lft"><span class="bn">' + esc(BN[b] || b) + '</span><span class="pv">' + esc(ls.map(l => l.t).join(' · ')) + '</span></span>' + chip(s0) + '</button>';
         }).join('') + '</div>';
     }
@@ -541,7 +565,7 @@ function catView(id, fromSearch){
   const bs = new Map();
   ls.forEach(l => { if (l.b && l.k !== 'note') { if (!bs.has(l.b)) bs.set(l.b, []); bs.get(l.b).push(l); } });
   const sec = {both:[], part:[], ist:[], ank:[], read:[], warn:[]};
-  bs.forEach((lst, b) => { const s = groupStatus(b, id); (sec[s] || sec.ist).push(b); });
+  bs.forEach((lst, b) => { const s = groupStatus(b, id); (sec[s === 'mixed' ? 'both' : s] || sec.ist).push(b); });
   for (const k in sec) sec[k].sort((a, b) => (BN[a] || a).localeCompare(BN[b] || b, 'tr'));
   const notes = ls.filter(l => l.k === 'note');
   const n = catCounts(id);
@@ -554,7 +578,7 @@ function catView(id, fromSearch){
       sec[key].map(b => {
         const lst = bs.get(b).slice().sort(lineOrder);
         const open = st.open.has(id + '|' + b);
-        return '<button class="brow" data-ob="' + esc(id + '|' + b) + '" aria-expanded="' + open + '"><span class="lft"><span class="bn">' + esc(BN[b] || b) + '</span><span class="pv">' + esc(lst.map(l => l.t).join(' · ')) + '</span></span>' + chip(key) + '</button>' +
+        return '<button class="brow" data-ob="' + esc(id + '|' + b) + '" aria-expanded="' + open + '"><span class="lft"><span class="bn">' + esc(BN[b] || b) + '</span><span class="pv">' + esc(lst.map(l => l.t).join(' · ')) + '</span></span>' + chip(key === 'both' ? groupStatus(b, id) : key) + '</button>' +
           (open ? '<div class="bdet"><ul class="ls">' + lst.map(l => lineRow(l, [])).join('') + '</ul></div>' : '');
       }).join('') + '</div>';
   };
