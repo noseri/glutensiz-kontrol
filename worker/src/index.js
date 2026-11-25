@@ -96,18 +96,27 @@ function kisiler(env) {
   }
 }
 
+// Uygulama şifreyi encodeURIComponent ile gönderir: başlıklar yalnızca Latin-1 taşıyabildiği için
+// ı, ş, ğ, İ gibi harfler kodlanmadan gönderilemez. Kodlanmamış (eski) biçim de kabul edilir.
+function sifreAdaylari(ham) {
+  let cozulmus = ham;
+  try { cozulmus = decodeURIComponent(ham); } catch { /* kodlanmamış */ }
+  return [...new Set([cozulmus, ham].map(s => s.normalize('NFC').trim()))].filter(s => s.length >= 8 && s.length <= 256);
+}
+
 async function kim(req, env) {
   const m = (req.headers.get('Authorization') || '').match(/^Bearer\s+([\s\S]+)$/);
   if (!m) return null;
-  const verilen = m[1].trim();
-  if (verilen.length < 8 || verilen.length > 256) return null;
-  const vo = await ozet(verilen);
+  const adaylar = sifreAdaylari(m[1].trim());
+  if (!adaylar.length) return null;
+  const ozetler = await Promise.all(adaylar.map(ozet));
   let bulunan = null;
   for (const [degisken, gorunen] of kisiler(env)) {
-    const gizli = env[degisken];
-    if (typeof gizli !== 'string' || gizli.trim().length < 8) continue;
+    const gizli = typeof env[degisken] === 'string' ? env[degisken].normalize('NFC').trim() : '';
+    if (gizli.length < 8) continue;
+    const go = await ozet(gizli);
     // erken çıkmadan hepsini karşılaştır: yanıt süresi hangi şifrenin denendiğini ele vermesin
-    if (ayni(vo, await ozet(gizli.trim())) && !bulunan) bulunan = gorunen.trim();
+    for (const vo of ozetler) if (ayni(vo, go) && !bulunan) bulunan = gorunen.trim();
   }
   return bulunan;
 }
