@@ -23,6 +23,16 @@ Derneklerde olmayan ama güvendiğiniz ürünleri uygulamadan ekleyebilirsiniz. 
 - **Değiştirilemez kayıt:** satırlar silinmez. “Listeden çıkar” ürünü listeden kaldırır ama kaydı “Geçmiş” bölümünde, kimin ne zaman çıkardığıyla birlikte saklar. Veritabanındaki tetikleyiciler eklenme ve çıkarma kaydının sonradan düzenlenmesini engeller (`worker/schema.sql`).
 - **Nerede:** Cloudflare Workers + D1 (ücretsiz katman), kodu `worker/`. Liste herkese açık olarak okunabilir; ekleme ve çıkarma şifre ister. Haftalık kontrol listenin bir yedeğini `site/bizim.json` olarak depoya da yazar.
 
+## Tepkiler (beğendim, beğenmedim, favori, bize dokundu)
+
+Herhangi bir ürün satırına (dernek listesi ya da Bizim listemiz) dokununca küçük bir pencere açılır. Her kişi kendi tepkisini verir; satırda baş harfle görünür (♥ M · 👎 H), pencerede tam adla.
+
+- **Beğendim / Beğenmedim / Favori:** beğendim ile beğenmedim birbirini dışlar; favori beğeni sayılır. Beğenmeme nedenine kısa bir not yazılabilir.
+- **Bize dokundu:** listede olsa bile rahatsızlık yapan ürün için. Not ve tarihle saklanır; ürünün satırında ve markanın kartında kırmızı uyarı olarak ikinizde de görünür.
+- **Tat güvenlik değildir:** tepkiler yeşil/sarı/kırmızı kararı hiçbir zaman değiştirmez.
+- **Ana sayfa:** “Tepkilerimiz” altında Dokunan, Favori, Beğenilen ve Beğenilmeyen ürünler kimin ne dediğiyle listelenir. İki listedeki aynı ürüne verilen tepkiler tek satırda birleşir; liste güncellenip satırın yazımı değişse de tepki en benzer satıra bağlanır.
+- **Gizli:** tepkiler yalnızca şifresi girilmiş telefonlarda görünür. Herkese açık listede ve depodaki haftalık yedekte (`site/bizim.json`) yer almaz; şifre telefondan silinince tepkilerin telefondaki kopyası da silinir.
+
 ### Bir kerelik kurulum
 
 1. Cloudflare panelinde **Workers & Pages** sayfasını bir kez açın (hesabın `workers.dev` adresi böylece oluşur).

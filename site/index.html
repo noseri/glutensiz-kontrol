@@ -200,6 +200,43 @@ details.fold[open] summary::after{content:"–"}
 .cf{display:inline-flex;align-items:center;gap:12px;font-weight:700;color:var(--ink)}
 .us-a{display:inline-flex;gap:18px}
 .tag-d{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--usbg);color:var(--us);font-size:11.5px;font-weight:700;vertical-align:1px}
+/* tepkiler: beğendim / beğenmedim / favori / bize dokundu (tat bilgisi; güvenlik renklerine karışmaz) */
+:root{--fav:light-dark(#c2255c,#ff8fb3);--favbg:light-dark(#fdeef4,#33141f)}
+.li[data-ln],.us-it[data-us]{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.li[data-ln]:active,.us-it[data-us]:active{background:var(--soft)}
+.rx{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+.rx-i{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px 0 6px;border-radius:999px;font-size:12px;font-weight:800;background:var(--soft);color:var(--ink);max-width:100%}
+.rx-i svg{width:13px;height:13px;flex:none}
+.rx-i.fav{background:var(--favbg);color:var(--fav)}.rx-i.fav svg{fill:currentColor}
+.rx-i.down{color:var(--mut)}
+.rx-i.dok{background:var(--nobg);color:var(--no)}
+.rx-i .rn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px}
+.dokw{color:var(--no);font-weight:700}
+.tpk{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.li:has(.tpk:focus-visible),.us-it:has(.tpk:focus-visible){outline:2px solid var(--ink);outline-offset:-2px;border-radius:10px}
+.sheet h3.tp-t:focus{outline:none}
+.sheet h3.tp-t{font-size:18px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tp-o{padding:10px 12px;border-radius:12px;background:var(--soft);font-size:13.5px;line-height:1.5}
+.tp-o b{font-weight:800}
+.tp-i{margin:0;color:var(--ink);font-weight:600}.tp-i:empty{display:none}
+.tp-b{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tpb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:66px;border:1px solid var(--line);border-radius:14px;background:var(--card);font:inherit;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;padding:6px}
+.tpb svg{width:22px;height:22px}
+.tpb[aria-pressed=true]{border-color:var(--ink);background:var(--soft)}
+.tpb[data-v=favori][aria-pressed=true]{border-color:var(--fav);background:var(--favbg);color:var(--fav)}.tpb[data-v=favori][aria-pressed=true] svg{fill:currentColor}
+.tpb.dok{flex-direction:row;min-height:48px;width:100%;gap:8px}
+.tpb.dok svg{width:19px;height:19px}
+.tpb.dok[aria-pressed=true]{border-color:var(--no);background:var(--nobg);color:var(--no)}
+.tp-tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:12px 16px}
+.tt{display:flex;align-items:center;gap:7px;min-width:0;height:42px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font:inherit;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}
+.tt svg{width:16px;height:16px;flex:none}
+.tt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt b{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+.tt.fv svg{color:var(--fav)}.tt.dk{color:var(--no)}
+.tt[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}.tt[aria-pressed=true] svg{color:inherit}
+.tt.dk[aria-pressed=true]{background:var(--no);border-color:var(--no);color:#fff}
+.tp-row{display:block;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:11px 16px 12px;font:inherit;color:inherit;cursor:pointer}
+.tp-row .tn{display:block;font-size:14.5px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tp-row .tn b{font-weight:800}
 .cf .lnk.yes{color:var(--no)}
 .addb{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-top:1px solid var(--line);background:none;padding:13px 16px;font-weight:800;font-size:15px;color:var(--us);cursor:pointer;min-height:48px;text-align:center}
 .addb svg{width:18px;height:18px;flex:none}
@@ -309,6 +346,9 @@ ICON.us = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wid
 ICON.plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
 ICON.x = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 7l10 10M17 7 7 17"/></svg>';
 ICON.down = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+ICON.heart = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+ICON.up = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>';
+ICON.dn = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>';
 const DOMAINS = [['gida','Gıda'],['ilac','İlaç'],['kozmetik','Bakım & kozmetik'],['takviye','Takviye']];
 const SRC = {ist:'İST', ank:'ANK'};
 const SRCN = {ist:'İstanbul', ank:'Ankara'};
@@ -370,8 +410,9 @@ function lineRow(l, toks, skip){
     const hn = norm(h);
     if (skip.some(x => hn.includes(x))){ const cut = h.split('(')[0].replace(/[\s:;,.-]+$/, ''); if (cut) h = cut; }
   }
-  return '<li class="li"><span class="src" title="' + SRCN[l.s] + ' listesi">' + SRC[l.s] + '</span>' +
-    '<div><div class="tx">' + decorate(l.t, toks) + '</div>' + (h ? '<div class="hd">' + SRCN[l.s] + ' · ' + esc(h) + '</div>' : '') + '</div>' +
+  const tap = canTap(l);
+  return '<li class="li"' + (tap ? ' data-ln="' + l.i + '"' : '') + '><span class="src" title="' + SRCN[l.s] + ' listesi">' + SRC[l.s] + '</span>' +
+    '<div><div class="tx">' + decorate(l.t, toks) + '</div>' + (h ? '<div class="hd">' + SRCN[l.s] + ' · ' + esc(h) + '</div>' : '') + (tap && TP.rows.length ? rxBadges(rxFor(lineKeys(l))) : '') + (tap ? tpk(l.t) : '') + '</div>' +
     '<span class="mk ' + cls + '" role="img" title="' + tip + '" aria-label="' + tip + '">' + ic + '</span></li>';
 }
 const GST = {
@@ -474,6 +515,7 @@ async function loadUs(draw){
   }
   usBusy = false;
   if (draw && D && usSig() !== before) rerender();
+  loadTp(draw);
 }
 addEventListener('online', () => loadUs(true));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - usLast > 30000) loadUs(true); });
@@ -503,10 +545,11 @@ function usRow(it, gone){
     stamp = '<b>' + esc(kok.ekleyen) + '</b> ekledi · ' + fmtWhen(kok.eklendi) +
       (kok !== it ? '<br><b>' + esc(it.ekleyen) + '</b> düzeltti · ' + fmtWhen(it.eklendi) : '');
   }
-  return '<div class="us-it' + (gone ? ' gone' : '') + '" id="us-' + (gone ? 'g' : '') + id + '"><span class="mk m-us" aria-hidden="true">' + ICON.us + '</span><div>' +
+  return '<div class="us-it' + (gone ? ' gone' : '') + '" id="us-' + (gone ? 'g' : '') + id + '"' + (gone ? '' : ' data-us="' + id + '"') + '><span class="mk m-us" aria-hidden="true">' + ICON.us + '</span><div>' +
     '<div class="us-t"><b>' + esc(it.marka) + '</b> ' + esc(it.urun) + (gone && usNext(it) ? '<span class="tag-d">düzeltildi</span>' : '') + '</div>' +
     (meta ? '<div class="us-m">' + meta + '</div>' : '') +
     '<div class="us-d"><span>Dayanak:</span> ' + esc(DAY[it.dayanak] || it.dayanak) + '</div>' +
+    (gone || !TP.rows.length ? '' : rxBadges(rxFor([usKey(it)]))) + (gone ? '' : tpk(it.marka + ' ' + it.urun)) +
     (it.notu ? '<div class="us-n">' + esc(it.notu) + '</div>' : '') +
     '<div class="us-s"><span>' + stamp + '</span>' +
       (!gone && USKEY ? '<span class="us-a"><button class="lnk" data-duzelt="' + id + '">Düzelt</button><button class="lnk" data-cikar="' + id + '">Listeden çıkar</button></span>' : '') + '</div></div></div>';
@@ -729,7 +772,7 @@ async function whoAmI(){
     if (r.ok){ const j = await r.json(); if (j.ad){ USNAME = j.ad; lsSet('gk-ad', USNAME); rerender(); } }
   } catch (e) {}
 }
-function forgetKey(){ USKEY = ''; USNAME = ''; lsSet('gk-sifre', null); lsSet('gk-ad', null); }
+function forgetKey(){ USKEY = ''; USNAME = ''; lsSet('gk-sifre', null); lsSet('gk-ad', null); setTp([]); lsSet('gk-tepki', null); }
 // HTTP başlıkları ı, ş, ğ gibi harfleri taşıyamaz; şifre kodlanarak gönderilir, sunucu çözer
 const authH = k => ({'Authorization': 'Bearer ' + encodeURIComponent(String(k).normalize('NFC'))});
 function netErr(e){ return navigator.onLine === false ? 'İnternet bağlantısı yok; bağlanınca yeniden deneyin.' : 'Sunucuya ulaşılamadı; biraz sonra yeniden deneyin.' + (e && e.message ? ' (' + e.message + ')' : ''); }
@@ -820,6 +863,7 @@ function usClick(t){
   if (ds.cikarhayir){ rerender(); return true; }
   if (ds.unut){ forgetKey(); rerender(); toast('Şifre bu telefondan silindi.'); return true; }
   if (ds.usall){ st.usAll = true; rerender(); return true; }
+  if (ds.tpt){ st.tpTab = ds.tpt; rerender(); return true; }
   return false;
 }
 
@@ -933,7 +977,7 @@ function brandCard(b, lines, toks, full){
   let title, sub;
   if (hasWarn && !hasOk){
     const ic2 = ICON.warn;
-    return brandCardShell(b, 'no', ic2, 'Gluten uyarısı var', 'Listelerde bu marka için uyarı satırı bulunuyor; satırları okuyun.', cs, byC, toks, full);
+    return brandCardShell(b, 'no', ic2, 'Gluten uyarısı var', 'Listelerde bu marka için uyarı satırı bulunuyor; satırları okuyun.' + dokWarn(b), cs, byC, toks, full);
   }
   const okL = lines.filter(l => l.k === 'ok');
   const pBoth = Math.max(okL.filter(l => l.st === 'both' && l.s === 'ist').length, okL.filter(l => l.st === 'both' && l.s === 'ank').length);
@@ -946,7 +990,7 @@ function brandCard(b, lines, toks, full){
   else { title = 'Uyarı'; sub = 'Aşağıdaki ürün(ler) için gluten uyarısı var.'; }
   if (v === 'one' && st.dom === 'ilac') sub = 'Diğer listede adı geçmiyor. Kutudaki <strong>üretici firmayı</strong> aşağıdaki listeyle karşılaştırın.';
   const ic = {ok:ICON.ok2, part:ICON.half, one:ICON.ok, rd:ICON.eye, no:ICON.warn}[v];
-  return brandCardShell(b, v, ic, title, sub + (hasWarn && v !== 'no' ? ' · <span style="color:var(--no);font-weight:700">uyarı içeren satır var</span>' : ''), cs, byC, toks, full, sartli && v === 'ok');
+  return brandCardShell(b, v, ic, title, sub + (hasWarn && v !== 'no' ? ' · <span style="color:var(--no);font-weight:700">uyarı içeren satır var</span>' : '') + dokWarn(b), cs, byC, toks, full, sartli && v === 'ok');
 }
 function repLink(b, v){
   const r = REP[b];
@@ -992,6 +1036,301 @@ function catTile(c){
 function afNotes(dom){
   const seen = new Set();
   return (LN.filter(l => l.k === 'note' && l.af && l.d === dom)).filter(l => { const k = l.c; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+// ---- tepkiler: her kişinin bir ürüne beğendi / beğenmedi / favori / bize dokundu tepkisi.
+// Yalnızca şifreyle okunur (kişisel bilgi); telefonda da saklanır, şifre silinince o da silinir.
+let TP = {rows: [], byKey: new Map()}, TPV = 0, KM = null;
+function setTp(rows){
+  TPV++;
+  TP = {rows: Array.isArray(rows) ? rows.filter(r => r && r.anahtar && r.kisi) : [], byKey: new Map()};
+  TP.rows.forEach(r => { if (!TP.byKey.has(r.anahtar)) TP.byKey.set(r.anahtar, []); TP.byKey.get(r.anahtar).push(r); });
+}
+if (API && USKEY){ try { setTp(JSON.parse(lsGet('gk-tepki') || '[]')); } catch (e) {} } else lsSet('gk-tepki', null);
+const tpSig = () => TP.rows.map(r => r.anahtar + '|' + r.kisi + '|' + r.zaman).join(',');
+async function loadTp(draw){
+  if (!API || !USKEY) return;
+  const before = tpSig();
+  try {
+    if (!USNAME) await whoAmI();
+    const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    const tm = setTimeout(() => { if (ctl) ctl.abort(); }, 7000);
+    const r = await fetch(API + '/tepkiler', {cache: 'no-store', headers: authH(USKEY), signal: ctl ? ctl.signal : undefined});
+    clearTimeout(tm);
+    if (r.status === 401){ forgetKey(); if (draw && D) rerender(); return; }
+    if (!r.ok) return;
+    const j = await r.json();
+    if (!Array.isArray(j.tepkiler)) return;
+    setTp(j.tepkiler); lsSet('gk-tepki', JSON.stringify(j.tepkiler));
+  } catch (e) { return; }
+  if (draw && D && tpSig() !== before) rerender();
+}
+// ürün anahtarı: dernek satırı için alan + marka + metnin kısa özeti; Bizim listemiz için ilk kaydın id'si (düzeltmelerde değişmez)
+function h32(s){ let h = 0x811c9dc5; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ('0000000' + h.toString(16)).slice(-8); }
+const lineKey = l => l.tk || (l.tk = 'l|' + l.d + '|' + (l.b || '') + '|' + h32(l.nn));
+const usKey = it => 'b|' + usRoot(it).id;
+const canTap = l => !!(API && l.b && l.k !== 'note' && l.k !== 'info' && !KAT_DIS.has(l.c));
+// anahtar → satır eşlemesi; liste ya da tepkiler değişince bir kez kurulur
+const TSTOP = new Set(['ve', 'ile', 'mg', 'ml', 'gr', 'kg', 'lt', 'cl', 'iu']);
+function keyMap(){
+  if (KM && KM.d === D && KM.v === TPV) return KM;
+  const k2l = new Map(), nb = new Map(), alias = new Map(), byLine = new Map();
+  LN.forEach(l => { if (canTap(l)) k2l.set(lineKey(l), l); });
+  // iki listedeki aynı ürün (eşleşme bazen tek yönlü yazılmış; iki yöne de bağlanır)
+  const link = (a, b) => { if (a && b && a !== b) (nb.get(a) || nb.set(a, new Set()).get(a)).add(b); };
+  LN.forEach(l => { if (l.st === 'both') (l.p || []).forEach(pid => { link(l, LN[pid]); link(LN[pid], l); }); });
+  // liste güncellenip satırın yazımı değiştiyse tepki aynı markadaki en benzer satıra bağlanır (emin değilse bağlanmaz)
+  TP.rows.forEach(r => {
+    const k = r.anahtar;
+    if (k[0] !== 'l' || k2l.has(k) || alias.has(k)) return;
+    const [, dom, bid] = k.split('|'), bw = new Set(norm(BN[bid] || r.marka).split(' '));
+    const tk = t => new Set(t.split(' ').filter(w => w.length > 1 && !TSTOP.has(w) && !bw.has(w)));
+    const a = tk(norm(r.urun));
+    if (!a.size) return;
+    let best = null, b1 = 0, b2 = 0;
+    (LBY[bid] || []).forEach(l => {
+      if (l.d !== dom || !canTap(l)) return;
+      const b = tk(l.nn); let n = 0; a.forEach(w => { if (b.has(w)) n++; });
+      const j = n / (a.size + b.size - n);
+      if (j > b1){ b2 = b1; b1 = j; best = l; } else if (j > b2) b2 = j;
+    });
+    if (best && b1 >= 0.6 && b1 - b2 >= 0.15){ alias.set(k, best); (byLine.get(best) || byLine.set(best, []).get(best)).push(k); }
+  });
+  // ana sayfada aynı ürüne iki listeden verilen tepkiler tek satırda toplanır
+  const resolve = k => k2l.get(k) || alias.get(k) || null, rl = new Set(), par = new Map(), top = new Map();
+  TP.rows.forEach(r => { const l = resolve(r.anahtar); if (l){ rl.add(l); par.set(l, l); } });
+  const find = x => { while (par.get(x) !== x) x = par.get(x); return x; };
+  rl.forEach(l => (nb.get(l) || []).forEach(o => { if (rl.has(o)){ const a = find(l), b = find(o); if (a !== b) par.set(a, b); } }));
+  rl.forEach(l => { const r = find(l), k = lineKey(l); if (!top.has(r) || k < top.get(r)) top.set(r, k); });
+  return KM = {d: D, v: TPV, nb, byLine, resolve, canon: l => rl.has(l) ? top.get(find(l)) : lineKey(l)};
+}
+// bir satırın tepki anahtarları: kendisi, diğer listedeki eşi ve yazımı değişmeden önceki hâli
+function lineKeys(l){
+  const m = keyMap(), ks = [];
+  [l].concat([...(m.nb.get(l) || [])]).forEach(x => { ks.push(lineKey(x)); (m.byLine.get(x) || []).forEach(k => ks.push(k)); });
+  return ks;
+}
+const tpCanon = k => { const m = keyMap(), l = m.resolve(k); return l ? m.canon(l) : k; };
+function rxFor(keys){
+  const by = new Map();
+  keys.forEach(k => (TP.byKey.get(k) || []).forEach(r => { const o = by.get(r.kisi); if (!o || o.zaman < r.zaman) by.set(r.kisi, r); }));
+  return [...by.values()].sort((a, b) => b.dokundu - a.dokundu || a.kisi.localeCompare(b.kisi, 'tr'));
+}
+const bas = n => esc(String(n || '?').charAt(0).toLocaleUpperCase('tr'));
+const tpk = t => '<button type="button" class="tpk">Tepki ver: ' + esc(String(t).split(/\s+/).slice(0, 6).join(' ')) + '</button>';
+function rxBadges(rows){
+  if (!rows.length) return '';
+  let h = '';
+  rows.forEach(r => { if (r.dokundu) h += '<span class="rx-i dok">' + ICON.warn + 'Dokundu · ' + esc(r.kisi) + '</span>'; });
+  const rk = r => r.favori ? 0 : r.tepki === 'begen' ? 1 : 2;
+  rows.slice().sort((a, b) => rk(a) - rk(b)).forEach(r => {
+    if (r.favori) h += '<span class="rx-i fav" title="' + esc(r.kisi) + ': favori">' + ICON.heart + bas(r.kisi) + '</span>';
+    else if (r.tepki === 'begen') h += '<span class="rx-i" title="' + esc(r.kisi) + ': beğendi">' + ICON.up + bas(r.kisi) + '</span>';
+    else if (r.tepki === 'begenme') h += '<span class="rx-i down" title="' + esc(r.kisi) + ': beğenmedi">' + ICON.dn + bas(r.kisi) + (r.neden ? ' <span class="rn">“' + esc(r.neden) + '”</span>' : '') + '</span>';
+  });
+  return h ? '<span class="rx">' + h + '</span>' : '';
+}
+function tpText(r){
+  const p = [];
+  if (r.favori) p.push('Favori');
+  else if (r.tepki === 'begen') p.push('Beğendi');
+  else if (r.tepki === 'begenme') p.push('Beğenmedi' + (r.neden ? ' — “' + esc(r.neden) + '”' : ''));
+  if (r.dokundu) p.push('<span class="dokw">Bize dokundu</span>' + (r.dokundu_notu ? ' — “' + esc(r.dokundu_notu) + '”' : '') + (r.dokundu_zaman ? ' (' + fmtWhen(r.dokundu_zaman) + ')' : ''));
+  return p.join(' · ');
+}
+// marka kartında: bu markanın ürünlerinden "bize dokundu" denenler
+function dokWarn(b){
+  if (!TP.rows.length) return '';
+  const m = keyMap(), bn = BNORM[b];
+  const n = new Set(TP.rows.filter(r => {
+    if (!r.dokundu) return false;
+    const l = m.resolve(r.anahtar);
+    return l ? l.b === b : (r.anahtar.split('|')[2] === b || norm(r.marka) === bn);
+  }).map(r => tpCanon(r.anahtar))).size;
+  return n ? ' · <span class="dokw">Bu markanın ' + n + ' ürünü size dokundu</span>' : '';
+}
+// tepki penceresi
+let tpDlg = null, tpCur = null, tpS = {tepki: null, favori: false, dokundu: false};
+function buildTp(){
+  const d = document.createElement('dialog');
+  d.className = 'sheet'; d.setAttribute('aria-labelledby', 'tpH');
+  d.innerHTML = '<form novalidate>' +
+    '<h3 id="tpH" class="tp-t" tabindex="-1" autofocus></h3><p class="lead" id="tpSub"></p>' +
+    '<div class="tp-o" id="tpO" hidden></div>' +
+    '<fieldset class="rad"><legend id="tpL">Sizin tepkiniz</legend><div class="tp-b">' +
+      '<button type="button" class="tpb" data-v="begen" aria-pressed="false">' + ICON.up + 'Beğendim</button>' +
+      '<button type="button" class="tpb" data-v="begenme" aria-pressed="false">' + ICON.dn + 'Beğenmedim</button>' +
+      '<button type="button" class="tpb" data-v="favori" aria-pressed="false">' + ICON.heart + 'Favori</button>' +
+    '</div></fieldset>' +
+    '<label class="fl" data-neden hidden><span>Neden beğenmediniz? <span class="opt">· isteğe bağlı</span></span><input name="neden" maxlength="140" autocomplete="off" enterkeyhint="done" placeholder="ör. çok kuru, pahalı, dağılıyor"></label>' +
+    '<button type="button" class="tpb dok" data-v="dokundu" aria-pressed="false">' + ICON.warn + 'Bize dokundu</button>' +
+    '<p class="small" style="margin:-6px 0 0">Listede olsa bile rahatsızlık yaptıysa işaretleyin; ürün ikinizde de uyarıyla görünür. Tat tercihinden ayrı tutulur.</p>' +
+    '<label class="fl" data-dnotu hidden><span>Ne oldu? <span class="opt">· isteğe bağlı</span></span><input name="dnotu" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="ör. 2 saat sonra karın ağrısı, parti no"></label>' +
+    '<label class="fl" data-sifre hidden>Ekleme şifreniz<input name="sifre" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false"><span class="small">Tepkiler yalnızca şifreyle görünür; bir kez girersiniz, bu telefonda saklanır.</span></label>' +
+    '<p class="small tp-i" role="status"></p><p class="err" role="alert"></p>' +
+    '<div class="acts"><button type="button" class="btn2" data-kapat="1">Vazgeç</button><button type="submit" class="btn">Kaydet</button></div></form>';
+  document.body.appendChild(d);
+  d.querySelector('form').addEventListener('submit', e => { e.preventDefault(); submitTp(); });
+  d.addEventListener('click', e => {
+    if (e.target === d || e.target.closest('[data-kapat]')) return d.close();
+    const b = e.target.closest('.tpb'); if (b) tpToggle(b.dataset.v);
+  });
+  d.addEventListener('close', () => document.documentElement.classList.remove('modal'));
+  return d;
+}
+function tpPaint(){
+  const q = x => tpDlg.querySelector(x);
+  q('.tpb[data-v=begen]').setAttribute('aria-pressed', String(tpS.tepki === 'begen'));
+  q('.tpb[data-v=begenme]').setAttribute('aria-pressed', String(tpS.tepki === 'begenme'));
+  q('.tpb[data-v=favori]').setAttribute('aria-pressed', String(tpS.favori));
+  q('.tpb[data-v=dokundu]').setAttribute('aria-pressed', String(tpS.dokundu));
+  q('[data-neden]').hidden = tpS.tepki !== 'begenme';
+  q('[data-dnotu]').hidden = !tpS.dokundu;
+}
+// beğendim ile beğenmedim birbirini dışlar; favori beğeni sayılır
+function tpToggle(v){
+  if (v === 'begen'){ tpS.tepki = tpS.tepki === 'begen' ? null : 'begen'; if (tpS.tepki !== 'begen') tpS.favori = false; }
+  else if (v === 'begenme'){ tpS.tepki = tpS.tepki === 'begenme' ? null : 'begenme'; if (tpS.tepki) tpS.favori = false; }
+  else if (v === 'favori'){ tpS.favori = !tpS.favori; if (tpS.favori) tpS.tepki = 'begen'; }
+  else if (v === 'dokundu') tpS.dokundu = !tpS.dokundu;
+  tpPaint();
+}
+function openTp(kind, id){
+  if (!API || !D) return;
+  let cur;
+  if (kind === 'l'){
+    const l = LN[id]; if (!l || !canTap(l)) return;
+    const keys = lineKeys(l), mine = USNAME ? rxFor(keys).find(r => r.kisi === USNAME) : null;
+    cur = {anahtar: mine ? mine.anahtar : lineKey(l), keys, alan: l.d, marka: String(BN[l.b] || l.b).slice(0, 80), urun: l.t.slice(0, 300),
+      baslik: l.t, alt: [BN[l.b], (CAT[l.c] || {}).n, keyMap().nb.has(l) ? 'iki listede de var' : SRCN[l.s] + ' listesi'].filter(Boolean).join(' · ')};
+  } else {
+    const it = US.urunler.find(x => +x.id === id); if (!it) return;
+    const k = usKey(it);
+    cur = {anahtar: k, keys: [k], alan: it.alan, marka: String(it.marka).slice(0, 80), urun: String(it.urun).slice(0, 300), baslik: it.marka + ' ' + it.urun, alt: ['Bizim listemiz', it.kategori].filter(Boolean).join(' · ')};
+  }
+  tpCur = cur;
+  tpDlg = tpDlg || buildTp();
+  tpDlg.querySelector('form').reset();
+  tpDlg.querySelector('#tpH').textContent = cur.baslik;
+  tpDlg.querySelector('#tpSub').textContent = cur.alt;
+  tpFill();
+  document.documentElement.classList.add('modal');
+  if (typeof tpDlg.showModal === 'function') tpDlg.showModal(); else tpDlg.setAttribute('open', '');
+}
+// pencereyi kişinin kayıtlı tepkisi ve diğer kişinin tepkileriyle doldurur
+function tpFill(){
+  const f = tpDlg.querySelector('form'), el = n => f.elements.namedItem(n);
+  const rows = rxFor(tpCur.keys), mine = USNAME ? rows.find(r => r.kisi === USNAME) : null, others = rows.filter(r => r !== mine);
+  if (mine) tpCur.anahtar = mine.anahtar;
+  tpS = {tepki: mine ? mine.tepki : null, favori: !!(mine && mine.favori), dokundu: !!(mine && mine.dokundu)};
+  el('neden').value = (mine && mine.neden) || '';
+  el('dnotu').value = (mine && mine.dokundu_notu) || '';
+  const o = tpDlg.querySelector('#tpO');
+  o.hidden = !others.length;
+  o.innerHTML = others.map(r => '<div><b>' + esc(r.kisi) + ':</b> ' + tpText(r) + '</div>').join('');
+  tpDlg.querySelector('#tpL').textContent = 'Sizin tepkiniz' + (USNAME ? ' (' + USNAME + ')' : '');
+  tpDlg.querySelector('[data-sifre]').hidden = !!USKEY;
+  tpDlg.querySelector('.tp-i').textContent = '';
+  tpDlg.querySelector('.err').textContent = '';
+  const b = f.querySelector('.btn'); b.disabled = false; b.textContent = 'Kaydet';
+  tpPaint();
+  return mine;
+}
+async function submitTp(){
+  const f = tpDlg.querySelector('form'), el = n => f.elements.namedItem(n), err = tpDlg.querySelector('.err'), btn = f.querySelector('.btn');
+  const key = USKEY || el('sifre').value.normalize('NFC').trim();
+  err.textContent = '';
+  if (key.length < 8){ err.textContent = 'Ekleme şifrenizi yazın (en az 8 karakter).'; el('sifre').focus(); return; }
+  btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    if (!USKEY || !USNAME){
+      const r1 = await fetch(API + '/ben', {cache: 'no-store', headers: authH(key)});
+      if (r1.status === 401){
+        if (USKEY) forgetKey();
+        tpDlg.querySelector('[data-sifre]').hidden = false;
+        err.textContent = 'Şifre tanınmadı. Yeniden yazıp deneyin.'; el('sifre').value = ''; el('sifre').focus();
+        btn.disabled = false; btn.textContent = 'Kaydet'; return;
+      }
+      if (!r1.ok) throw new Error('HTTP ' + r1.status);
+      const ad = (await r1.json()).ad;
+      const r2 = await fetch(API + '/tepkiler', {cache: 'no-store', headers: authH(key)});
+      if (!r2.ok) throw new Error('HTTP ' + r2.status);
+      const j2 = await r2.json();
+      USKEY = key; lsSet('gk-sifre', key); USNAME = ad; lsSet('gk-ad', ad);
+      setTp(j2.tepkiler || []); lsSet('gk-tepki', JSON.stringify(TP.rows));
+      rerender();
+      const secim = JSON.stringify(tpS), neden = el('neden').value, dnotu = el('dnotu').value;
+      if (tpFill()){
+        // bu ürüne daha önce (başka telefondan) tepki verilmiş: kayıtlı hâli gösterilir, kişi bakıp yeniden kaydeder
+        tpDlg.querySelector('.tp-i').textContent = 'Bu ürüne daha önce tepki vermişsiniz; kayıtlı tepkiniz yüklendi. Değiştirmek isterseniz seçip yeniden kaydedin.';
+        return;
+      }
+      tpS = JSON.parse(secim); el('neden').value = neden; el('dnotu').value = dnotu; tpPaint();
+      btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+    }
+    const body = {anahtar: tpCur.anahtar, alan: tpCur.alan, marka: tpCur.marka, urun: tpCur.urun, tepki: tpS.tepki, favori: tpS.favori, dokundu: tpS.dokundu,
+      neden: el('neden').value.trim(), dokundu_notu: el('dnotu').value.trim()};
+    const r = await fetch(API + '/tepki', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(key)), body: JSON.stringify(body)});
+    let j = {}; try { j = await r.json(); } catch (x) {}
+    if (r.ok && j.kisi){
+      USNAME = j.kisi; lsSet('gk-ad', USNAME);
+      // bu kişinin bu üründeki kaydı (eşleşmiş satırlar dahil) yenisiyle değişir
+      const eski = TP.rows.filter(x => x.kisi === j.kisi && x.anahtar !== tpCur.anahtar && tpCur.keys.includes(x.anahtar));
+      eski.forEach(x => fetch(API + '/tepki', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authH(key)),
+        body: JSON.stringify({anahtar: x.anahtar, alan: x.alan, marka: x.marka, urun: x.urun, tepki: null, favori: false, dokundu: false})}).catch(() => {}));
+      const rows = TP.rows.filter(x => !(x.kisi === j.kisi && tpCur.keys.includes(x.anahtar)));
+      if (j.tepki) rows.unshift(j.tepki);
+      setTp(rows); lsSet('gk-tepki', JSON.stringify(rows));
+      tpDlg.close(); rerender();
+      toast(!j.tepki ? 'Tepki kaldırıldı' : j.tepki.dokundu ? 'Kaydedildi · “bize dokundu” uyarısı ikinizde de görünecek' : j.tepki.favori ? 'Favorilere eklendi' : 'Kaydedildi');
+      return;
+    }
+    if (r.status === 401){
+      if (USKEY){ forgetKey(); tpDlg.querySelector('[data-sifre]').hidden = false; }
+      err.textContent = 'Şifre tanınmadı. Yeniden yazıp deneyin.';
+      el('sifre').value = ''; el('sifre').focus();
+    } else err.textContent = j.hata || ('Kaydedilemedi (hata ' + r.status + '). Biraz sonra yeniden deneyin.');
+  } catch (e) { err.textContent = netErr(e); }
+  btn.disabled = false; btn.textContent = 'Kaydet';
+}
+// ana sayfa: Tepkilerimiz (ürün bazında; iki listedeki aynı ürün tek satır)
+const TPT = [['dokundu', 'Dokunan', 'warn', 'dk'], ['favori', 'Favori', 'heart', 'fv'], ['begen', 'Beğenilen', 'up', ''], ['begenme', 'Beğenilmeyen', 'dn', '']];
+function tpName(r){
+  const u = String(r.urun || ''), mw = norm(r.marka).split(' ').filter(Boolean).length, w = u.split(/\s+/);
+  const rest = norm(w.slice(0, mw).join(' ')) === norm(r.marka) ? w.slice(mw).join(' ') : u;
+  return rest || u;
+}
+const tpQuery = r => (r.marka + ' ' + tpName(r).split(/\s+/).slice(0, 3).join(' ')).trim();
+function tpGroups(dom){
+  const prod = new Map();
+  TP.rows.filter(r => r.alan === dom).forEach(r => {
+    const c = tpCanon(r.anahtar);
+    if (!prod.has(c)) prod.set(c, {key: c, all: [], snap: r});
+    const p = prod.get(c); p.all.push(r); if (r.zaman > p.snap.zaman) p.snap = r;
+  });
+  const items = [...prod.values()].map(p => {
+    const by = new Map(); p.all.forEach(r => { const o = by.get(r.kisi); if (!o || o.zaman < r.zaman) by.set(r.kisi, r); });
+    p.rows = [...by.values()].sort((a, b) => b.dokundu - a.dokundu || a.kisi.localeCompare(b.kisi, 'tr'));
+    return p;
+  }).sort((a, b) => (b.snap.zaman > a.snap.zaman) - (b.snap.zaman < a.snap.zaman));
+  return {
+    favori: items.filter(p => p.rows.some(r => r.favori)),
+    begen: items.filter(p => p.rows.some(r => r.tepki === 'begen' && !r.favori)),
+    begenme: items.filter(p => p.rows.some(r => r.tepki === 'begenme')),
+    dokundu: items.filter(p => p.rows.some(r => r.dokundu))
+  };
+}
+function tpHome(){
+  if (!API || !USKEY) return '';
+  const g = tpGroups(st.dom);
+  const total = new Set([].concat(g.favori, g.begen, g.begenme, g.dokundu).map(p => p.key)).size;
+  const h = '<div class="sec"><span>Tepkilerimiz</span><span>' + (total || '') + '</span></div><article class="card">';
+  if (!total) return h + '<div class="us-e">Bir ürünün satırına dokunarak beğendim, beğenmedim, favori ya da “bize dokundu” diyebilirsiniz. Kimin ne dediği burada toplanır.</div></article>';
+  const tab = st.tpTab && g[st.tpTab] && g[st.tpTab].length ? st.tpTab : TPT.find(([k]) => g[k].length)[0];
+  return h + '<div class="tp-tabs" role="group" aria-label="Tepki türü">' +
+    TPT.filter(([k]) => g[k].length).map(([k, n, ic, c]) => '<button class="tt' + (c ? ' ' + c : '') + '" data-tpt="' + k + '" aria-pressed="' + (k === tab) + '">' + ICON[ic] + '<span>' + n + '</span><b>' + g[k].length + '</b></button>').join('') + '</div>' +
+    g[tab].slice(0, 40).map(p => '<button class="tp-row" data-q="' + esc(tpQuery(p.snap)) + '"><span class="tn"><b>' + esc(p.snap.marka) + '</b> ' + esc(tpName(p.snap)) + '</span>' + rxBadges(p.rows) + '</button>').join('') +
+    '</article>';
 }
 
 // ---- son aramalar (telefonda saklanır; markette aynı ürüne tekrar bakmak tek dokunuş)
@@ -1043,7 +1382,7 @@ function weekChanges(){
 function home(){
   const cats = D.cats.filter(c => c.d === st.dom && (CATL[c.id] || []).some(l => l.k === 'ok' || (l.k === 'note' && l.af)));
   cats.sort((a, b) => a.n.localeCompare(b.n, 'tr'));
-  let h = recentRow() + legend() + weekChanges() + usHome();
+  let h = recentRow() + legend() + weekChanges() + tpHome() + usHome();
   const af = afNotes(st.dom);
   if (st.dom === 'ilac') h += ilacFirms();
   h += '<div class="sec"><span>Kategoriler</span><span>' + cats.length + '</span></div><div class="grid">' + cats.map(catTile).join('') + '</div>';
@@ -1091,6 +1430,7 @@ function infoBlocks(){
       '<p><span class="kbd">Yeşil çift tik</span>: aynı ürün (ya da markanın o kategorideki tüm ürünleri) diğer listede de var. <span class="kbd">Sarı çizgi</span>: marka diğer listede var ama bu ürün yok. <span class="kbd">Sarı tik</span>: yalnızca bu listede. <span class="kbd">Göz</span>: onay değil, “etiketi okunarak alınacak” firmalar. <span class="kbd">Kırmızı üçgen</span>: listede gluten uyarısı.</p>' +
       '<p>Eşleştirme temkinlidir: emin olamadığında “tek listede” der. Her satır listedeki orijinal metindir; altı çizili ifadeler koşul (hariç, sadece, etiketi okuyun), kırmızı ifadeler gluten uyarısıdır.</p>' +
       (API ? '<p><span class="kbd">Mavi yer imi</span>: “Bizim listemiz”, yani sizin eklediğiniz ürünler. Dernek onayı değildir ve yeşil/sarı/kırmızı kararı değiştirmez. Kimin eklediğini telefondaki ekleme şifresi, tarihi sunucunun saati belirler; kayıt sonradan değiştirilemez. Listeden çıkarılan ürünler “Geçmiş” bölümünde kimin, ne zaman çıkardığıyla birlikte kalır.</p>' : '') +
+      (API ? '<p><span class="kbd">Tepkiler</span>: bir ürün satırına dokunarak beğendim, beğenmedim, favori ya da “bize dokundu” diyebilirsiniz. Satırda baş harflerle görünür, ana sayfada “Tepkilerimiz” altında toplanır. Tat bilgisi güvenlik kararını değiştirmez; “bize dokundu” ise ürünün ve markasının yanında uyarı olarak görünür. Tepkiler yalnızca şifresi girilmiş telefonlarda görünür.</p>' : '') +
       '</div></details>' +
     '<p class="foot">Dernekler, üreticilerin üretim koşullarını haber vermeden değiştirebildiğini ve listede olsa bile ambalajdaki alerjen bilgisinin okunması gerektiğini belirtiyor. Bu sayfa listeleri birleştirir; onay vermez.</p>';
 }
@@ -1243,6 +1583,13 @@ $('#tabs').addEventListener('click', e => {
   pickDom(b.dataset.dom);
 });
 out.addEventListener('click', e => {
+  // ürün satırına dokununca tepki penceresi (düğme ve bağlantılar hariç)
+  const rxEl = e.target.closest('.li[data-ln], .us-it[data-us]');
+  if (rxEl && (!e.target.closest('button, a, summary') || e.target.closest('.tpk'))){
+    if (st.q.trim()) recentSave(st.q);
+    if (rxEl.dataset.ln) openTp('l', +rxEl.dataset.ln); else openTp('b', +rxEl.dataset.us);
+    return;
+  }
   const t = e.target.closest('button,[data-cat]'); if (!t) return;
   if (st.q.trim()) recentSave(st.q);  // sonuçla ilgilenildi: aramayı son aramalara ekle
   if (usClick(t)) return;
