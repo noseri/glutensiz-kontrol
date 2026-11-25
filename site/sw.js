@@ -1,11 +1,12 @@
 /* Glutensiz Kontrol — çevrimdışı çalışma
- * Sayfa ve liste (index.html, data.json): önce ağ; ağ yoksa ya da 4 sn'de yanıt gelmezse telefondaki son kopya.
+ * Sayfa, liste ve analiz raporu listesi (index.html, data.json, reports.json): önce ağ; ağ yoksa ya da 4 sn'de yanıt gelmezse telefondaki son kopya.
  * Yazı tipleri ve simgeler: önce önbellek.
  */
-const CACHE = 'gk-v1';
+const CACHE = 'gk-v2';
 const SHELL = [
   './index.html',
   './data.json',
+  './reports.json',
   './manifest.webmanifest',
   './fonts/manrope-latin.woff2',
   './fonts/manrope-latin-ext.woff2',
@@ -31,13 +32,14 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  const fresh = req.mode === 'navigate' || /\/(index\.html|data\.json)?$/.test(url.pathname);
+  const fresh = req.mode === 'navigate' || /\/(index\.html|data\.json|reports\.json)?$/.test(url.pathname);
   e.respondWith(fresh ? networkFirst(e, req, url) : cacheFirst(req));
 });
 
 function cacheKey(req, url) {
   if (req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('/index.html')) return './index.html';
-  return url.pathname.endsWith('/data.json') ? './data.json' : req;
+  if (url.pathname.endsWith('/data.json')) return './data.json';
+  return url.pathname.endsWith('/reports.json') ? './reports.json' : req;
 }
 
 async function networkFirst(e, req, url) {

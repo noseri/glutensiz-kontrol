@@ -150,6 +150,8 @@ details.fold[open] summary::after{content:"–"}
 .chg li{margin:3px 0}
 .loading{padding:40px 0;color:var(--mut);text-align:center}
 .moved{margin:2px 0 12px}
+.rep{display:flex;align-items:center;gap:10px;margin:0 16px 14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;color:var(--ink);font-size:13.5px;line-height:1.4;text-decoration:none}
+.rep:hover{border-color:var(--mut)}.rep svg{width:17px;height:17px;flex:none;color:var(--mut)}.rep span{flex:1}.rep .rs{color:var(--mut)}
 .foot{margin-top:28px;font-size:12.5px;color:var(--mut);line-height:1.55}
 .kbd{font-weight:700;color:var(--ink)}
 @media (prefers-reduced-motion:no-preference){.card{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
@@ -189,13 +191,15 @@ const ICON = {
   eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
   no: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
   warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>',
-  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>'
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  lab: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5l-5.2 8.7A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-2.8L14 9.5V3"/><path d="M7.4 15h9.2"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>'
 };
 const DOMAINS = [['gida','Gıda'],['ilac','İlaç'],['kozmetik','Bakım & kozmetik'],['takviye','Takviye']];
 const SRC = {ist:'İST', ank:'ANK'};
 const SRCN = {ist:'İstanbul', ank:'Ankara'};
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-let D, CAT = {}, BN = {}, LBY = {}, GRP = {}, GBY = {}, CATL = {}, BNORM = {}, LN = [], PB = new Set();
+let REP = {}, D, CAT = {}, BN = {}, LBY = {}, GRP = {}, GBY = {}, CATL = {}, BNORM = {}, LN = [], PB = new Set();
 const st = {q:'', dom:'gida', view:'home', cat:null, open:new Set()};
 try { const s = localStorage.getItem('gk-dom'); if (s) st.dom = s; } catch (e) {}
 
@@ -211,6 +215,7 @@ function norm(s){
   s = s.replace(/\b(?:[a-z0-9] ){2,}[a-z0-9]\b/g, m => m.replace(/ /g, ''));
   return s;
 }
+function fmtMonth(ym){ const [y, m] = String(ym).split('-').map(Number); return m ? MONTHS[m-1] + ' ' + y : String(y); }
 function fmtDate(iso){ if(!iso) return ''; const [y,m,d] = iso.slice(0,10).split('-').map(Number); return d + ' ' + MONTHS[m-1] + ' ' + y; }
 function lev(a, b){
   if (Math.abs(a.length - b.length) > 2) return 9;
@@ -289,6 +294,7 @@ const STANDALONE = (typeof matchMedia === 'function' && matchMedia('(display-mod
 
 // ---- veri
 async function load(){
+  const repP = fetch('reports.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null);
   try {
     const r = await fetch('data.json', {cache:'no-cache'});
     FROM_CACHE = !!(r.headers && r.headers.get && r.headers.get('x-gk-offline') === '1');
@@ -311,6 +317,8 @@ async function load(){
   });
   D.groups.forEach(g => { GBY[g.b + '|' + g.c] = g; (GRP[g.b] = GRP[g.b] || []).push(g); });
   showUpd();
+  const rj = await repP;
+  if (rj && rj.brands) REP = rj.brands;
   drawTabs();
   route();
 }
@@ -395,6 +403,12 @@ function brandCard(b, lines, toks, full){
   const ic = {ok:ICON.ok2, part:ICON.half, one:ICON.ok, rd:ICON.eye, no:ICON.warn}[v];
   return brandCardShell(b, v, ic, title, sub + (hasWarn && v !== 'no' ? ' · <span style="color:var(--no);font-weight:700">uyarı içeren satır var</span>' : ''), cs, byC, toks, full, sartli && v === 'ok');
 }
+function repLink(b, v){
+  const r = REP[b];
+  if (!r || !['ok', 'part', 'one'].includes(v)) return '';
+  return '<a class="rep" href="' + esc(r.url) + '" target="_blank" rel="noopener" title="Satıcının yayınladığı laboratuvar raporları. Bilgi amaçlıdır, dernek onayı yerine geçmez; raporların çoğu parti bazlı değildir.">' +
+    ICON.lab + '<span><b>Analiz raporu var</b> <span class="rs">· ' + r.n + ' rapor' + (r.last ? ', son: ' + fmtMonth(r.last) : '') + ' · Doğa Evinizde</span></span>' + ICON.ext + '</a>';
+}
 function brandCardShell(b, v, ic, title, sub, cs, byC, toks, full, sartli){
   const limit = full ? 99 : 4;
   let rows = '';
@@ -409,7 +423,7 @@ function brandCardShell(b, v, ic, title, sub, cs, byC, toks, full, sartli){
       notes.map(n => '<div class="note' + (n.af ? ' af' : '') + '"><span class="src">' + SRC[n.s] + '</span>' + esc(n.t) + '</div>').join('') + '</div>';
   });
   const moreBtn = cs.length > limit ? '<button class="more" data-brand="' + esc(b) + '">Tüm kategoriler (' + cs.length + ')</button>' : '';
-  return '<article class="card v-' + v + '"><div class="verdict"><span class="dot">' + ic + '</span><div><p class="vt">' + esc(BN[b] || b) + '</p><p class="vs"><b class="k">' + title + '</b>' + (sartli ? '<span class="sart">Şartlı</span>' : '') + (sub ? ' · ' + sub : '') + '</p></div></div><div class="cats">' + rows + '</div>' + moreBtn + '</article>';
+  return '<article class="card v-' + v + '"><div class="verdict"><span class="dot">' + ic + '</span><div><p class="vt">' + esc(BN[b] || b) + '</p><p class="vs"><b class="k">' + title + '</b>' + (sartli ? '<span class="sart">Şartlı</span>' : '') + (sub ? ' · ' + sub : '') + '</p></div></div>' + repLink(b, v) + '<div class="cats">' + rows + '</div>' + moreBtn + '</article>';
 }
 function catCounts(c){
   const bs = new Map();
@@ -495,7 +509,7 @@ function infoBlocks(){
     '<details class="fold"><summary>Son değişiklikler</summary><div class="fbody">' + chHtml + '</div></details>' +
     '<details class="fold"><summary>Kaynak listeler ve son güncelleme tarihleri</summary><div class="fbody"><div class="src-l">' + src + '</div><p class="small">Tarihler derneklerin sitesindeki sayfanın son düzenlenme tarihidir.</p></div></details>' +
     '<details class="fold"><summary>Ek kaynaklar (bilgi amaçlı, onay yerine geçmez)</summary><div class="fbody">' +
-      '<p><a href="https://www.dogaevinizde.com/gluten-analiz-raporlari" target="_blank" rel="noopener"><b>Gluten analiz raporları</b></a> · Doğa Evinizde. 18 markanın laboratuvar raporları (PDF). Raporların çoğu parti bazlı değil; elinizdeki paketin raporu olmayabilir.</p>' +
+      '<p><a href="https://www.dogaevinizde.com/gluten-analiz-raporlari" target="_blank" rel="noopener"><b>Gluten analiz raporları</b></a> · Doğa Evinizde. 18 markanın laboratuvar raporları (PDF). Listelerde de geçen markaların kartında “Analiz raporu var” bağlantısı görünür. Raporların çoğu parti bazlı değil; elinizdeki paketin raporu olmayabilir.</p>' +
       '<p><a href="https://guvenilirgida.tarimorman.gov.tr/gkd" target="_blank" rel="noopener"><b>Taklit veya tağşiş yapılan gıdalar</b></a> · Tarım ve Orman Bakanlığı. Site otomatik taramaya kapalı olduğu için burada izlenmiyor; marka adıyla elle aranabilir ya da Bakanlığın Güvenilir Gıda uygulamasından bakılabilir.</p>' +
       '</div></details>' +
     '<details class="fold" id="ext"><summary>Ankara listesi: glutensiz mekânlar, oteller, üniversiteler</summary><div class="fbody">' +

@@ -21,19 +21,25 @@ case "$action" in
   publish)
     cp "$B/data.json" site/data.json
     cp "$B/pages.json" raw/pages.json
-    git add site/data.json raw/pages.json
+    git add site/data.json raw/pages.json site/reports.json
     if [ "$kind" = "degisiklik" ]; then msg="Listeler güncellendi ($today)"; else msg="Kaynak sayfa düzenlendi, ürün satırları aynı ($today)"; fi
     if git commit -m "$msg"; then push; deploy=true; fi
     ;;
   checked_only)
     cp "$B/data.json" site/data.json
-    git add site/data.json
+    git add site/data.json site/reports.json
     if git commit -m "Son kontrol: $today (değişiklik yok)"; then push; deploy=true; fi
     ;;
   *)
     echo "Yayın yok: $action"
     ;;
 esac
+
+# analiz raporu listesi tek başına değiştiyse (ör. dernek sayfası alınamadı ama rapor sayfası alındı)
+if ! git diff --quiet -- site/reports.json; then
+  git add site/reports.json
+  if git commit -m "Analiz raporu listesi güncellendi ($today)"; then push; deploy=true; fi
+fi
 
 if [ "$kind" != "sessiz" ]; then
   color=b60205; [ "$kind" = "degisiklik" ] && color=0b7a42
