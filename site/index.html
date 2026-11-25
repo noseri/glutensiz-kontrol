@@ -494,6 +494,10 @@ function infoBlocks(){
   return '<div class="sec"><span>Kaynaklar ve diğer bölümler</span></div>' + inst +
     '<details class="fold"><summary>Son değişiklikler</summary><div class="fbody">' + chHtml + '</div></details>' +
     '<details class="fold"><summary>Kaynak listeler ve son güncelleme tarihleri</summary><div class="fbody"><div class="src-l">' + src + '</div><p class="small">Tarihler derneklerin sitesindeki sayfanın son düzenlenme tarihidir.</p></div></details>' +
+    '<details class="fold"><summary>Ek kaynaklar (bilgi amaçlı, onay yerine geçmez)</summary><div class="fbody">' +
+      '<p><a href="https://www.dogaevinizde.com/gluten-analiz-raporlari" target="_blank" rel="noopener"><b>Gluten analiz raporları</b></a> · Doğa Evinizde. 18 markanın laboratuvar raporları (PDF). Raporların çoğu parti bazlı değil; elinizdeki paketin raporu olmayabilir.</p>' +
+      '<p><a href="https://guvenilirgida.tarimorman.gov.tr/gkd" target="_blank" rel="noopener"><b>Taklit veya tağşiş yapılan gıdalar</b></a> · Tarım ve Orman Bakanlığı. Site otomatik taramaya kapalı olduğu için burada izlenmiyor; marka adıyla elle aranabilir ya da Bakanlığın Güvenilir Gıda uygulamasından bakılabilir.</p>' +
+      '</div></details>' +
     '<details class="fold" id="ext"><summary>Ankara listesi: glutensiz mekânlar, oteller, üniversiteler</summary><div class="fbody">' +
       '<p class="small">Bu bölümler yalnızca Ankara listesinde var; karşılaştırma yapılmadı.</p>' +
       '<p><b>Mekânlar (' + (ex.mekan || []).length + ')</b></p>' + (ex.mekan || []).map(v => '<div class="venue"><b>' + esc(v.name) + '</b><span>' + esc(v.details.join(' · ')) + '</span></div>').join('') +
