@@ -200,7 +200,7 @@ function catView(id, fromSearch){
   for (const k in sec) sec[k].sort((a, b) => (BN[a] || a).localeCompare(BN[b] || b, 'tr'));
   const notes = ls.filter(l => l.k === 'note');
   const n = catCounts(id);
-  let h = (fromSearch ? '' : '<button class="back" data-back="1">' + ICON.back + 'Tüm kategoriler</button>') +
+  let h = (fromSearch ? '' : '<button class="back" data-back="1">' + ICON.back + (history.state && history.state.gk === 'kat' && history.state.q ? 'Aramaya dön' : 'Tüm kategoriler') + '</button>') +
     '<h2>' + esc(c.n) + '</h2>' + (() => { const ps = [[n.both, 'marka iki listede'], [n.part, 'marka iki listede ama ürünler farklı'], [n.ist, 'sadece İstanbul'], [n.ank, 'sadece Ankara']].filter(x => x[0]).map(x => x[0] + ' ' + x[1]); return ps.length ? '<p class="small">' + ps.join(' · ') + '</p>' : ''; })();
   if (notes.length) h += notes.map(nn => '<div class="note' + (nn.af ? ' af' : '') + '"><span class="src">' + SRC[nn.s] + '</span>' + esc(nn.t) + '</div>').join('');
   if (!fromSearch) h += usCatBlock(c);  // aramadan gelindiyse eşleşmeler zaten yukarıda

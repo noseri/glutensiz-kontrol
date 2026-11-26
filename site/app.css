@@ -305,3 +305,18 @@ html.modal{overflow:hidden}
 .nb{min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;line-height:1.25}
 .nb small{display:block;font-weight:600;color:var(--mut);font-size:11.5px}
 .nb[aria-pressed=true]{border-color:var(--no);background:var(--nobg);color:var(--no)}.nb[aria-pressed=true] small{color:inherit}
+/* gezinti: başlık ana sayfaya götürür; arama ve kategori sayfasında arama kutusunun solunda geri düğmesi (kutu hep görünür) */
+#ana{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
+#geri{position:absolute;left:4px;top:50%;transform:translateY(-50%);z-index:1;width:44px;height:44px;border:0;border-radius:12px;background:none;color:var(--ink);cursor:pointer;display:none;place-items:center;-webkit-tap-highlight-color:transparent}
+#geri svg{position:static;transform:none;width:22px;height:22px;color:currentColor;pointer-events:none}
+#geri:active{background:var(--soft)}
+body.icerde #geri{display:grid}
+body.icerde .search > svg{visibility:hidden}
+/* "Yeni arama": arama ve kategori sayfasında, ana sayfa kaydırılınca sağ altta (markette tek elle başparmağın ulaştığı yer); yazarken gizli */
+#yeni{position:fixed;right:calc(16px + env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));z-index:19;display:none;align-items:center;gap:8px;height:50px;padding:0 20px 0 16px;border:0;border-radius:25px;background:var(--ink);color:var(--bg);font:inherit;font-size:15px;font-weight:700;letter-spacing:-.01em;box-shadow:0 6px 22px rgba(0,0,0,.22);cursor:pointer;-webkit-tap-highlight-color:transparent}
+#yeni svg{width:19px;height:19px;flex:none}
+#yeni:active{transform:scale(.97)}
+body:is(.icerde,.asagi):not(.yaziyor) #yeni{display:inline-flex}
+body:is(.icerde,.asagi):not(.yaziyor) #toast{bottom:calc(80px + env(safe-area-inset-bottom))}
+main{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+

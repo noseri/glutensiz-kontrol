@@ -62,6 +62,8 @@ Görünen adlar `worker/wrangler.toml` içindeki `KISILER` satırındadır.
 
 Bir kez açıldıktan sonra liste telefona kaydedilir ve sonraki açılışlarda beklemeden telefondan gelir; internet varsa yenisi arka planda alınır, değiştiyse sayfa kendiliğinden yenilenir. İnternet yoksa başlıkta “çevrimdışı” yazar. Arama kutusu boşken son aramalar tek dokunuşla tekrarlanabilir.
 
+**Markette gezinme:** aramada ve kategori sayfasında arama kutusunun solundaki **←** ana sayfaya götürür (başlığa dokunmak da öyle). iPhone’da ekranın sol kenarından sağa kaydırmak (Android’de geri tuşu) bir önceki ekrana döner; açık bir pencere varsa önce onu kapatır. Sağ alttaki **Yeni arama** aramayı temizleyip klavyeyi açar. Uygulama 2 dakikadan uzun arka planda kaldıysa açılınca ana sayfa gelir; kısa geçişlerde ekran yerinde kalır, pencerede yazılmış ya da seçilmiş bir şey varsa ona dokunulmaz.
+
 ## Güncelleme
 
 Her pazartesi 10:33’te (Türkiye saati) GitHub Actions şunları yapar:
@@ -86,7 +88,7 @@ Elle çalıştırmak için: **Actions → Haftalık liste kontrolü → Run work
 Sayfa da sunucu da yayınlanmadan önce testlerden geçer (**Actions → Testler**); bir test bile kalırsa yayın yapılmaz, canlı sürüm olduğu gibi kalır. Haftalık güncelleme de bu kapıdan geçer.
 
 - **Sunucu:** şifre ve gizlilik, ekleme/düzeltme/çıkarma, tepkiler, dokunma kayıtları, hatalı istekler.
-- **İki telefon:** mayildiz ve heyybenbus aynı anda; giriş/çıkış, Bizim listemiz, tepkiler, dokunma günlüğü, çevrimdışı açılış, erişilebilirlik.
+- **İki telefon:** mayildiz ve heyybenbus aynı anda; giriş/çıkış, Bizim listemiz, tepkiler, dokunma günlüğü, çevrimdışı açılış, gezinti (geri hareketi, uzun aradan sonra ana sayfa), erişilebilirlik.
 - **Kalıcı numara ve yedek:** yazımı değişen satırın numarasını koruması; şifreli yedeğin doğru açılması.
 - Arayüz testleri sabit bir test verisiyle (`tests/veri/data.json`) çalışır, haftalık liste değişse de bozulmaz; gerçek liste ayrıca kısa bir duman testinden geçer.
 

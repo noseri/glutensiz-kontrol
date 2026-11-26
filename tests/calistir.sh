@@ -71,6 +71,7 @@ calistir test_kat.py sunucu tohum
 calistir test_duzelt.py sunucu tohum
 calistir test_tepki.py sunucu tohum
 calistir test_kontrol.py sunucu tohum
+calistir test_gezinti.py sunucu tohum
 calistir test_sw.py
 calistir duman.py
 

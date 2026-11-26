@@ -22,7 +22,7 @@
 <div class="wrap">
   <header class="top">
     <div class="brandline">
-      <h1>Glutensiz Kontrol</h1>
+      <h1><a href="./" id="ana">Glutensiz Kontrol</a></h1>
       <span class="upd" id="upd">&nbsp;</span>
     </div>
     <p class="sub">İstanbul ve Ankara çölyak derneklerinin onay listeleri, tek aramada.</p>
@@ -32,6 +32,7 @@
   <div class="wrap">
     <div class="search" role="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <button id="geri" type="button" aria-label="Ana sayfaya dön"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <input id="q" type="search" inputmode="search" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="Marka veya ürün ara…" aria-label="Marka veya ürün ara">
       <button id="clear" aria-label="Aramayı temizle"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
@@ -41,6 +42,7 @@
 </div>
 <div class="wrap"><main id="out"><details class="key"><summary><span class="kg"><span class="kc v-ok"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5l4 4L13 9"></path><path d="M10.5 15.5l1 1L21.5 7"></path></svg></span>İki listede</span><span class="kc v-one"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Tek listede</span><span class="kc v-no"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg></span>Listede yok</span><span class="kc v-us"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z"></path></svg></span>Bizim listemiz</span></span><span class="kq">Renkler ne anlama geliyor?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span></summary><div class="legend"><div class="lg v-ok"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5l4 4L13 9"></path><path d="M10.5 15.5l1 1L21.5 7"></path></svg></span><div><b>Yeşil — iki listede de</b><span>Önceliğiniz: hem İstanbul hem Ankara onaylı.</span></div></div><div class="lg v-one"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><div><b>Sarı — tek listede</b><span>Yalnızca bir dernek onaylı: paketi inceleyerek alın.</span></div></div><div class="lg v-no"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg></span><div><b>Kırmızı — hiçbir listede yok</b><span>Kuralınıza göre almıyorsunuz.</span></div></div><div class="lg v-us"><span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z"></path></svg></span><div><b>Mavi — bizim listemiz</b><span>Sizin eklediğiniz ürünler; dernek onayı değil. Kimin, ne zaman eklediği yazılı.</span></div></div></div></details><div class="loading">Listeler yükleniyor…</div></main><footer class="sig">Sevdiğime, değerle. 🧡B</footer></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<button id="yeni" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>Yeni arama</button>
 
 <script src="js/temel.js?v=__SURUM__" defer></script>
 <script src="js/cevrimdisi.js?v=__SURUM__" defer></script>
